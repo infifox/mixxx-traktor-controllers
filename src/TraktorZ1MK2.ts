@@ -342,6 +342,20 @@ class LightsStatus {
     right: ["black", "black", "black", "black", "black", "black"],
   };
 
+  clear() {
+    this.vuLevel = { left: 0, right: 0 };
+    this.eqModeSwitch = { left: "black", right: "black" };
+    this.stemsModeSwitch = { left: "black", right: "black" };
+    this.fxToggle = { left: "black", right: "black" };
+    this.fxSwitches = ["black", "black", "black", "black"];
+    this.fxFilterSwitch = "black";
+    this.prelistenToggle = { left: "black", right: "black" };
+    this.bottomLeds = {
+      left: ["black", "black", "black", "black", "black", "black"],
+      right: ["black", "black", "black", "black", "black", "black"],
+    };
+  }
+
   toMessage(): Uint8Array {
     const message = new Uint8Array(47);
 
@@ -647,10 +661,18 @@ class TraktorZ1MK2Class {
   }
 
   shutdown(): void {
+    // Stop the timer to update lights
     if (this.lightsTimer) {
       engine.stopTimer(this.lightsTimer);
       this.lightsTimer = undefined;
     }
+
+    // Turn off all the lights
+    this.lights.clear();
+    controller.sendOutputReport(
+      0,
+      this.lights.toMessage().buffer as ArrayBuffer,
+    );
   }
 
   incomingData(data: Uint8Array, _length: number): void {
