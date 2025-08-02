@@ -4,13 +4,16 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.9.2"
   },
   "scripts": {
     "build": "tsc",
-    "install": "cp dist/TraktorZ1MK2.js ~/.mixxx/controllers/Traktor-Z1-MK2.script.js && cp res/*.xml ~/.mixxx/controllers/"
+    "install": "cp dist/TraktorZ1MK2.js ~/.mixxx/controllers/Traktor-Z1-MK2.script.js && cp res/*.xml ~/.mixxx/controllers/",
+    "convert-font": "node ./src/convert-font.ts"
   }
 }

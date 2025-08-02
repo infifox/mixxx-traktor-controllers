@@ -147,19 +147,20 @@ the top of the column and the most-significant at the bottom.
 ### Screen message
 
 Message ID: 0xE0, 0xE1, 0xE2
-Message length: 137 bytes
+Message length: 273 bytes
 
 This message sends 2 rows of pixel data to the screen (out of 8 total)
 
 - Byte 1: Message ID (0xE0, 0xE1, 0xE2)
   - The message ID controls which screen is updated, 0xE0 for the left screen, 0xE1 for the
     center screen, and 0xE2 for the right screen
-- Byte 2: 0x00
-- Byte 3: Row to update, from 0x00 to 0x06.
+- Byte 2-3: 0x0000
+- Byte 4: Row to update, from 0x00 to 0x06.
   - *While it's possible to use any number in this range, each message will update two rows at
     once, and Traktor always sends even values for this (0x00, 0x02, 0x04, or 0x06)*
-- Bytes 4-9: 0x00 00 80 00 02 00
+- Bytes 5-9: 0x00 80 00 02 00
   - *These have something to do with controlling how much pixel data is loaded from the message, but
     Traktor always uses this same value and I haven't investigated enough to fully understand them*
   - *Likely the 0x80 is the size of the pixel data and the 0x02 is the number of rows*
-- Bytes 10-137: Pixel data -- 2 rows of 64 pixels each, one after another
+- Bytes 10-265: Pixel data -- 2 rows of 128 pixels each, one after another
+- Bytes 266-273: Unused

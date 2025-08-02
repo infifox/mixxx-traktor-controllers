@@ -1,0 +1,2 @@
+Font: cynicalico/fonts serif_10x14
+https://github.com/cynicalico/fonts/tree/main
