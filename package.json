@@ -1,0 +1,16 @@
+{
+  "name": "mixxx-traktor-controllers",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "install": "cp dist/TraktorZ1MK2.js ~/.mixxx/controllers/Traktor-Z1-MK2.script.js && cp res/*.xml ~/.mixxx/controllers/"
+  }
+}

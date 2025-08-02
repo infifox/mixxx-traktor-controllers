@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MixxxControllerPreset schemaVersion="1" mixxxVersion="1.11+">
+    <info>
+        <name>Native Instruments Traktor Z1 MK2</name>
+        <author>Infinifox</author>
+        <description>HID mapping for the Traktor Z1 MK2</description>
+        <devices>
+            <product protocol="hid" vendor_id="0x17CC" product_id="0x2400" />
+        </devices>
+    </info>
+    <controller id="TraktorZ1MK2">
+        <scriptfiles>
+            <file
+                filename="Traktor-Z1-MK2.script.js"
+                functionprefix="TraktorZ1MK2"
+            />
+        </scriptfiles>
+    </controller>
+</MixxxControllerPreset>
