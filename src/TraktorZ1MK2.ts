@@ -634,13 +634,13 @@ const updateLightsFromEngine = (
     lights.fxSwitches[n - 1] = dimColorWhen(
       defaultedColor(
         config[colorKey as keyof typeof config] as string,
-        config.colorTheme,
+        DEFAULT_Z1_MK2_CONFIG[colorKey as keyof typeof config] as string,
       ),
       !activeEffectPresets.has(n),
     );
   }
   lights.fxFilterSwitch = dimColorWhen(
-    config.colorFx5,
+    defaultedColor(config.colorFx5, DEFAULT_Z1_MK2_CONFIG.colorFx5),
     !activeEffectPresets.has(5),
   );
 
@@ -660,7 +660,7 @@ const updateLightsFromEngine = (
       lights.fxToggle[side] = dimColorWhen(
         defaultedColor(
           config[colorKey as keyof typeof config] as string,
-          config.colorTheme,
+          DEFAULT_Z1_MK2_CONFIG[colorKey as keyof typeof config] as string,
         ),
         engine.getValue(fxRack, "enabled") === 0,
       );
@@ -715,7 +715,7 @@ class TraktorZ1MK2Class {
   isDebugging = false;
   oldMessage: InputMessage = InputMessage.load(NULL_INPUT);
   lights: LightsStatus = new LightsStatus();
-  config: TraktorZ1MK2Config = DEFAULT_Z1_MK2_CONFIG;
+  config: TraktorZ1MK2Config = Object.assign({}, DEFAULT_Z1_MK2_CONFIG);
   lightsTimer?: engine.TimerID;
   screens = new TraktorScreens(3);
 
