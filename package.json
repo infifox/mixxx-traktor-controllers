@@ -6,14 +6,15 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pngjs": "^6.0.5",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "tsdown": "^0.13.2"
   },
   "peerDependencies": {
     "typescript": "^5.9.2"
   },
   "scripts": {
-    "build": "tsc",
-    "install": "cp dist/TraktorZ1MK2.js ~/.mixxx/controllers/Traktor-Z1-MK2.script.js && cp res/*.xml ~/.mixxx/controllers/",
+    "build": "tsdown && cp res/*.xml dist/",
+    "install": "cp dist/* ~/.mixxx/controllers/",
     "convert-font": "node ./src/convert-font.ts"
   }
 }
