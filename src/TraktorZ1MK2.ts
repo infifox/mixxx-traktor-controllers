@@ -4,7 +4,7 @@ import {
   dimColor,
   dimColorWhen,
 } from "./TraktorColors";
-import { TraktorScreens } from "./TraktorScreen";
+import { TraktorScreen, TraktorScreens } from "./TraktorScreen";
 
 /** The maximum value for a slider or knob. */
 const INPUT_NUMBER_MAX = 0x0fff;
@@ -63,10 +63,63 @@ const DEFAULT_Z1_MK2_CONFIG: TraktorZ1MK2Config = {
 };
 
 /**
- * Indicates a side of the controller, for distinguishing controls and lights
- * which are repeated on both sides of the controller.
+ * Indicates the general group of inputs, to allow for generic access to inputs which are
+ * duplicated on the left and right side of the controller.
  */
-type Side = "left" | "right";
+type InputChannel = "left" | "right" | "main";
+
+/**
+ * Identifies all inputs which are buttons, with a boolean pressed value.
+ *
+ * - *eq* - EQ mode switch button for a side
+ * - *stems* - Stems mode switch button for a side
+ * - *menu* - Decks toggle switch button
+ * - *fxToggle* - FX toggle button for a side
+ * - *fx1* - FX switch button 1
+ * - *fx2* - FX switch button 2
+ * - *fx3* - FX switch button 3
+ * - *fx4* - FX switch button 4
+ * - *fx5* - FX switch "filter" button
+ * - *prelisten* - Prelisten toggle button for a side
+ */
+type ButtonInputName =
+  | "eq"
+  | "stems"
+  | "menu"
+  | "fxToggle"
+  | "fx1"
+  | "fx2"
+  | "fx3"
+  | "fx4"
+  | "fx5"
+  | "prelisten";
+
+/**
+ * Identifies all inputs which are knobs or sliders, with a numerical value
+ * from 0-1.
+ *
+ * - *main* - Main volume knob
+ * - *hpmix* - Headphone mix knob
+ * - *hpvol* - Headphone volume knob
+ * - *crossfader* - Crossfader
+ * - *gain* - Gain knob for a side
+ * - *hi* - High EQ knob for a side
+ * - *mid* - Mid EQ knob for a side
+ * - *low* - Low EQ knob for a side
+ * - *fx* - FX knob for a side
+ * - *fader* - Fader for a side
+ */
+type NumberInputName =
+  | "main"
+  | "hpmix"
+  | "hpvol"
+  | "crossfader"
+  | "gain"
+  | "hi"
+  | "mid"
+  | "low"
+  | "fx"
+  | "fader";
 
 /**
  * Provides a convenient interface to retrieve data from an input message.
@@ -97,149 +150,344 @@ class InputMessage {
     return this.data === NULL_INPUT;
   }
 
-  /** EQ mode switch button status for a side */
-  eqModeSwitch(side: Side): boolean {
-    switch (side) {
+  getButtonValue(channel: InputChannel, name: ButtonInputName): boolean {
+    switch (channel) {
+      case "main":
+        switch (name) {
+          case "menu":
+            return !!(this.data[1] & 0x04);
+          case "fx1":
+            return !!(this.data[1] & 0x80);
+          case "fx2":
+            return !!(this.data[2] & 0x01);
+          case "fx3":
+            return !!(this.data[2] & 0x02);
+          case "fx4":
+            return !!(this.data[2] & 0x04);
+          case "fx5":
+            return !!(this.data[2] & 0x08);
+        }
       case "left":
-        return !!(this.data[1] & 0x01);
+        switch (name) {
+          case "eq":
+            return !!(this.data[1] & 0x01);
+          case "stems":
+            return !!(this.data[1] & 0x02);
+          case "fxToggle":
+            return !!(this.data[1] & 0x20);
+          case "prelisten":
+            return !!(this.data[2] & 0x10);
+          default:
+        }
       case "right":
-        return !!(this.data[1] & 0x08);
+        switch (name) {
+          case "eq":
+            return !!(this.data[1] & 0x08);
+          case "stems":
+            return !!(this.data[1] & 0x10);
+          case "fxToggle":
+            return !!(this.data[1] & 0x40);
+          case "prelisten":
+            return !!(this.data[2] & 0x20);
+        }
     }
+
+    throw new Error(`Invalid button -- ${channel}:${name}`);
   }
 
-  /** Stems mode switch button status for a side */
-  stemsModeSwitch(side: Side): boolean {
-    switch (side) {
+  getNumberValue(channel: InputChannel, name: NumberInputName): number {
+    switch (channel) {
+      case "main":
+        switch (name) {
+          case "main":
+            return (this.data[25] | (this.data[26] << 8)) / INPUT_NUMBER_MAX;
+          case "hpmix":
+            return (this.data[23] | (this.data[24] << 8)) / INPUT_NUMBER_MAX;
+          case "hpvol":
+            return (this.data[27] | (this.data[28] << 8)) / INPUT_NUMBER_MAX;
+          case "crossfader":
+            return (this.data[33] | (this.data[34] << 8)) / INPUT_NUMBER_MAX;
+        }
       case "left":
-        return !!(this.data[1] & 0x02);
+        switch (name) {
+          case "gain":
+            return (this.data[3] | (this.data[4] << 8)) / INPUT_NUMBER_MAX;
+          case "hi":
+            return (this.data[5] | (this.data[6] << 8)) / INPUT_NUMBER_MAX;
+          case "mid":
+            return (this.data[7] | (this.data[8] << 8)) / INPUT_NUMBER_MAX;
+          case "low":
+            return (this.data[9] | (this.data[10] << 8)) / INPUT_NUMBER_MAX;
+          case "fx":
+            return (this.data[11] | (this.data[12] << 8)) / INPUT_NUMBER_MAX;
+          case "fader":
+            return (this.data[29] | (this.data[30] << 8)) / INPUT_NUMBER_MAX;
+        }
       case "right":
-        return !!(this.data[1] & 0x10);
+        switch (name) {
+          case "gain":
+            return (this.data[13] | (this.data[14] << 8)) / INPUT_NUMBER_MAX;
+          case "hi":
+            return (this.data[15] | (this.data[16] << 8)) / INPUT_NUMBER_MAX;
+          case "mid":
+            return (this.data[17] | (this.data[18] << 8)) / INPUT_NUMBER_MAX;
+          case "low":
+            return (this.data[19] | (this.data[20] << 8)) / INPUT_NUMBER_MAX;
+          case "fx":
+            return (this.data[21] | (this.data[22] << 8)) / INPUT_NUMBER_MAX;
+          case "fader":
+            return (this.data[31] | (this.data[32] << 8)) / INPUT_NUMBER_MAX;
+        }
     }
-  }
 
-  /** Decks toggle switch button status */
-  decksAbCdToggle(): boolean {
-    return !!(this.data[1] & 0x04);
-  }
-
-  /** FX toggle button status for a side */
-  fxToggle(side: Side): boolean {
-    switch (side) {
-      case "left":
-        return !!(this.data[1] & 0x20);
-      case "right":
-        return !!(this.data[1] & 0x40);
-    }
-  }
-
-  /** FX switch button status */
-  fxSwitch(number: number): boolean {
-    switch (number) {
-      case 1:
-        return !!(this.data[1] & 0x80);
-      case 2:
-        return !!(this.data[2] & 0x01);
-      case 3:
-        return !!(this.data[2] & 0x02);
-      case 4:
-        return !!(this.data[2] & 0x04);
-      case 5:
-        return !!(this.data[2] & 0x08);
-      default:
-        return false;
-    }
-  }
-
-  /** Prelisten toggle button status for a side */
-  prelistenToggle(side: Side): boolean {
-    switch (side) {
-      case "left":
-        return !!(this.data[2] & 0x10);
-      case "right":
-        return !!(this.data[2] & 0x20);
-    }
-  }
-
-  /** Gain knob for a side, scaled to 0-1 */
-  gain(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[3] | (this.data[4] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[13] | (this.data[14] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** Hi knob for a side, scaled to 0-1 */
-  hi(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[5] | (this.data[6] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[15] | (this.data[16] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** Mid knob for a side, scaled to 0-1 */
-  mid(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[7] | (this.data[8] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[17] | (this.data[18] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** Low knob for a side, scaled to 0-1 */
-  low(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[9] | (this.data[10] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[19] | (this.data[20] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** FX knob for a side, scaled to 0-1 */
-  fx(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[11] | (this.data[12] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[21] | (this.data[22] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** Headphone mix, scaled to 0-1 */
-  headphonesMix(): number {
-    return (this.data[23] | (this.data[24] << 8)) / INPUT_NUMBER_MAX;
-  }
-
-  /** Main volume, scaled to 0-1 */
-  mainVolume(): number {
-    return (this.data[25] | (this.data[26] << 8)) / INPUT_NUMBER_MAX;
-  }
-
-  /** Headphone volume, scaled to 0-1 */
-  headphonesVolume(): number {
-    return (this.data[27] | (this.data[28] << 8)) / INPUT_NUMBER_MAX;
-  }
-
-  /** Fader position, scaled to 0-1 */
-  fader(side: Side): number {
-    switch (side) {
-      case "left":
-        return (this.data[29] | (this.data[30] << 8)) / INPUT_NUMBER_MAX;
-      case "right":
-        return (this.data[31] | (this.data[32] << 8)) / INPUT_NUMBER_MAX;
-    }
-  }
-
-  /** Crossfader position, scaled to 0-1 */
-  crossfader(): number {
-    return (this.data[33] | (this.data[34] << 8)) / INPUT_NUMBER_MAX;
+    throw new Error(`Invalid input -- ${channel}:${name}`);
   }
 }
+
+/**
+ * Provides a description of a change to input, to be displayed on
+ * a screen.
+ */
+type ChangeDescription = {
+  channel: InputChannel;
+  label: string;
+  value: string;
+};
+
+/** Provides helper methods to deal with changes to input. */
+class InputChange {
+  oldMessage: InputMessage;
+  newMessage: InputMessage;
+  changeDescription?: ChangeDescription;
+
+  constructor(oldMessage: InputMessage, newMessage: InputMessage) {
+    this.oldMessage = oldMessage;
+    this.newMessage = newMessage;
+  }
+
+  private wasButtonPressed(
+    channel: InputChannel,
+    name: ButtonInputName,
+  ): boolean {
+    const oldValue = this.oldMessage.getButtonValue(channel, name);
+    const newValue = this.newMessage.getButtonValue(channel, name);
+    return newValue && !oldValue;
+  }
+
+  private handleBooleanToggle({
+    channel,
+    name,
+    engineGroup,
+    engineName,
+  }: {
+    channel: InputChannel;
+    name: ButtonInputName;
+    engineGroup: string;
+    engineName: string;
+  }) {
+    if (this.wasButtonPressed(channel, name)) {
+      const value = engine.getValue(engineGroup, engineName);
+      engine.setValue(engineGroup, engineName, value === 0 ? 1 : 0);
+    }
+  }
+
+  private handleValueChange({
+    channel,
+    name,
+    label,
+    engineGroup,
+    engineName,
+    scale,
+  }: {
+    channel: InputChannel;
+    name: NumberInputName;
+    label?: string;
+    engineGroup: string;
+    engineName: string;
+    scale: "flat" | "gain" | "crossfader";
+  }) {
+    const oldValue = this.oldMessage.getNumberValue(channel, name);
+    const newValue = this.newMessage.getNumberValue(channel, name);
+    if (!this.oldMessage.isNull() && oldValue !== newValue) {
+      let scaledValue;
+      switch (scale) {
+        case "flat":
+          scaledValue = newValue;
+          break;
+        case "gain":
+          /**
+           * Scales a value from 0-1 into a value from 0-4, for use as a gain value. Values < 0.5 are
+           * linearly mapped to 0-1, and 0.5-1 are mapped to 1-4. */
+          if (newValue < 0.5) {
+            scaledValue = newValue * 2;
+          } else {
+            scaledValue = (newValue - 0.5) * 6 + 1;
+          }
+          break;
+        case "crossfader":
+          /** Scales a value from 0-1 into a value from -1-1 for use as a crossfader value. */
+          scaledValue = newValue * 2 - 1;
+          break;
+      }
+
+      engine.setValue(engineGroup, engineName, scaledValue);
+
+      if (label) {
+        this.changeDescription = {
+          channel,
+          label,
+          value: `${Math.round(newValue * 100)}%`,
+        };
+      }
+    }
+  }
+
+  updateEngine() {
+    // Handle center knobs and sliders
+    this.handleValueChange({
+      channel: "main",
+      name: "main",
+      label: "Main",
+      engineGroup: "[Master]",
+      engineName: "gain",
+      scale: "gain",
+    });
+    this.handleValueChange({
+      channel: "main",
+      name: "hpmix",
+      label: "Hp Mix",
+      engineGroup: "[Master]",
+      engineName: "headMix",
+      scale: "crossfader",
+    });
+    this.handleValueChange({
+      channel: "main",
+      name: "hpvol",
+      label: "Hp Vol",
+      engineGroup: "[Master]",
+      engineName: "headGain",
+      scale: "gain",
+    });
+    this.handleValueChange({
+      channel: "main",
+      name: "crossfader",
+      label: "Xfade",
+      engineGroup: "[Master]",
+      engineName: "crossfader",
+      scale: "crossfader",
+    });
+
+    // Handle changes for each side
+    for (const { channel: engineGroup, side: channel } of mappings) {
+      const eqRack = `[EqualizerRack1_${engineGroup}_Effect1]`;
+      const fxRack = `[QuickEffectRack1_${engineGroup}]`;
+
+      // Set side knob and fader values
+      this.handleValueChange({
+        channel,
+        name: "gain",
+        label: "Gain",
+        engineGroup,
+        engineName: "pregain",
+        scale: "gain",
+      });
+      this.handleValueChange({
+        channel,
+        name: "hi",
+        label: "Hi",
+        engineGroup: eqRack,
+        engineName: "parameter3",
+        scale: "gain",
+      });
+      this.handleValueChange({
+        channel,
+        name: "mid",
+        label: "Mid",
+        engineGroup: eqRack,
+        engineName: "parameter2",
+        scale: "gain",
+      });
+      this.handleValueChange({
+        channel,
+        name: "low",
+        label: "Low",
+        engineGroup: eqRack,
+        engineName: "parameter1",
+        scale: "gain",
+      });
+      this.handleValueChange({
+        channel,
+        name: "fx",
+        label: "FX",
+        engineGroup: fxRack,
+        engineName: "super1",
+        scale: "gain",
+      });
+      this.handleValueChange({
+        channel,
+        name: "fader",
+        label: "Volume",
+        engineGroup,
+        engineName: "volume",
+        scale: "flat",
+      });
+
+      // Handle toggle FX
+      this.handleBooleanToggle({
+        channel,
+        name: "fxToggle",
+        engineGroup: fxRack,
+        engineName: "enabled",
+      });
+
+      // Handle toggle prelisten
+      this.handleBooleanToggle({
+        channel,
+        name: "prelisten",
+        engineGroup,
+        engineName: "pfl",
+      });
+
+      // Handle FX switch buttons
+      for (let n = 1; n <= 5; n++) {
+        if (this.wasButtonPressed("main", `fx${n}` as ButtonInputName)) {
+          const numChainPresets = engine.getValue(fxRack, "num_chain_presets");
+          if (n < numChainPresets) {
+            console.debug(
+              `Loading quick effect chain preset ${n}/${numChainPresets} for channel ${channel}`,
+            );
+            engine.setValue(fxRack, "loaded_chain_preset", n);
+
+            // Workaround for FX super wheel not updating if preset is loaded at the same time
+            engine.beginTimer(
+              1,
+              () => {
+                engine.setValue(
+                  fxRack,
+                  "super1",
+                  this.newMessage.getNumberValue(channel, "fx"),
+                );
+              },
+              true,
+            );
+
+            this.changeDescription = {
+              channel: "main",
+              label: "FX",
+              value: `#${n}`,
+            };
+          } else {
+            console.warn(
+              `Attempt to load quick effect chain preset ${n}/${numChainPresets}, but no such preset exists`,
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+type Side = "left" | "right";
 
 /** Provides a convenient interface to store light status and send it to the controller. */
 class LightsStatus {
@@ -348,221 +596,6 @@ const mappings = [
     side: "right" as const,
   },
 ];
-
-/**
- * Scales a value from 0-1 into a value from 0-4, for use as a gain value. Values < 0.5 are
- * linearly mapped to 0-1, and 0.5-1 are mapped to 1-4. */
-const scaleToGain = (value: number): number => {
-  if (value < 0.5) {
-    return value * 2;
-  } else {
-    return (value - 0.5) * 6 + 1;
-  }
-};
-
-/** Scales a value from 0-1 into a value from -1-1 for use as a crossfade value. */
-const scaleToCrossfade = (value: number): number => {
-  return value * 2 - 1;
-};
-
-type ChangeDescription = {
-  label: string;
-  value: string;
-};
-
-/** Processes a change in input and updates the engine. */
-const updateEngineFromInput = (
-  input: InputMessage,
-  oldInput: InputMessage,
-  isDebugging: boolean,
-): {
-  lightsChanged: boolean;
-  changeDescriptions: (ChangeDescription | undefined)[];
-} => {
-  let lightsChanged = false;
-  const changeDescriptions: (ChangeDescription | undefined)[] = [
-    undefined,
-    undefined,
-    undefined,
-  ];
-
-  const buttonWasPressed = (fn: (input: InputMessage) => boolean): boolean => {
-    return fn(input) && !fn(oldInput);
-  };
-  const handleValueChange = (
-    side: Side | "main",
-    label: string,
-    getValue: (input: InputMessage) => number,
-    setValue: (value: number) => void,
-  ) => {
-    const oldValue = getValue(oldInput);
-    const value = getValue(input);
-    if (!oldInput.isNull() && value !== oldValue) {
-      setValue(value);
-      let i = 0;
-      switch (side) {
-        case "left":
-          i = 0;
-          break;
-        case "main":
-          i = 1;
-          break;
-        case "right":
-          i = 2;
-          break;
-      }
-      changeDescriptions[i] = {
-        label,
-        value: `${Math.round(value * 100)}%`,
-      };
-    }
-  };
-  const toggleBoolean = (group: string, name: string): void => {
-    const value = engine.getValue(group, name);
-    engine.setValue(group, name, value === 0 ? 1 : 0);
-    lightsChanged = true;
-  };
-
-  // Handle center knobs and sliders
-  handleValueChange(
-    "main",
-    "Main",
-    (input) => input.mainVolume(),
-    (value) => {
-      engine.setValue("[Master]", "gain", scaleToGain(value));
-    },
-  );
-  handleValueChange(
-    "main",
-    "Hp Mix",
-    (input) => input.headphonesMix(),
-    (value) => {
-      engine.setValue("[Master]", "headMix", scaleToCrossfade(value));
-    },
-  );
-  handleValueChange(
-    "main",
-    "Hp Vol",
-    (input) => input.headphonesVolume(),
-    (value) => {
-      engine.setValue("[Master]", "headGain", scaleToGain(value));
-    },
-  );
-  handleValueChange(
-    "main",
-    "Xfade",
-    (input) => input.crossfader(),
-    (value) => {
-      engine.setValue("[Master]", "crossfader", scaleToCrossfade(value));
-    },
-  );
-
-  // Handle changes for each side
-  for (const { channel, side } of mappings) {
-    const eqRack = `[EqualizerRack1_${channel}_Effect1]`;
-    const fxRack = `[QuickEffectRack1_${channel}]`;
-
-    // Set side knob and fader values
-    handleValueChange(
-      side,
-      "Gain",
-      (input) => input.gain(side),
-      (value) => {
-        engine.setValue(channel, "pregain", scaleToGain(value));
-      },
-    );
-    handleValueChange(
-      side,
-      "Hi",
-      (input) => input.hi(side),
-      (value) => {
-        engine.setValue(eqRack, "parameter3", scaleToGain(value));
-      },
-    );
-    handleValueChange(
-      side,
-      "Mid",
-      (input) => input.mid(side),
-      (value) => {
-        engine.setValue(eqRack, "parameter2", scaleToGain(value));
-      },
-    );
-    handleValueChange(
-      side,
-      "Low",
-      (input) => input.low(side),
-      (value) => {
-        engine.setValue(eqRack, "parameter1", scaleToGain(value));
-      },
-    );
-    handleValueChange(
-      side,
-      "FX",
-      (input) => input.fx(side),
-      (value) => {
-        engine.setValue(fxRack, "super1", value);
-      },
-    );
-    handleValueChange(
-      side,
-      "Volume",
-      (input) => input.fader(side),
-      (value) => {
-        engine.setValue(channel, "volume", value);
-      },
-    );
-
-    // Handle toggle FX
-    if (input.fxToggle(side) && !oldInput.fxToggle(side)) {
-      toggleBoolean(fxRack, "enabled");
-      if (isDebugging) {
-        console.debug(`FX toggled for channel ${channel}`);
-      }
-    }
-
-    // Handle toggle prelisten
-    if (buttonWasPressed((input) => input.prelistenToggle(side))) {
-      toggleBoolean(channel, "pfl");
-      if (isDebugging) {
-        console.debug(`Prelisten toggled for channel ${channel}`);
-      }
-    }
-
-    // Handle FX switch buttons
-    for (let n = 1; n <= 5; n++) {
-      if (buttonWasPressed((input) => input.fxSwitch(n))) {
-        const numChainPresets = engine.getValue(fxRack, "num_chain_presets");
-        if (n < numChainPresets) {
-          console.debug(
-            `Loading quick effect chain preset ${n}/${numChainPresets} for channel ${channel}`,
-          );
-          engine.setValue(fxRack, "loaded_chain_preset", n);
-          lightsChanged = true;
-
-          // Workaround for FX super wheel not updating if preset is loaded at the same time
-          engine.beginTimer(
-            1,
-            () => {
-              engine.setValue(fxRack, "super1", input.fx(side));
-            },
-            true,
-          );
-
-          changeDescriptions[1] = {
-            label: "FX",
-            value: `#${n}`,
-          };
-        } else {
-          console.warn(
-            `Attempt to load quick effect chain preset ${n}/${numChainPresets}, but no such preset exists`,
-          );
-        }
-      }
-    }
-  }
-
-  return { lightsChanged, changeDescriptions };
-};
 
 const updateLightsFromEngine = (
   lights: LightsStatus,
@@ -677,14 +710,10 @@ const updateLightsFromEngine = (
   }
 };
 
-const ensureValidBoolean = (value: engine.SettingValue | undefined) => {
-  return typeof value === "boolean" ? value : undefined;
-};
-
 class TraktorZ1MK2Class {
   id: string = "";
   isDebugging = false;
-  currentInput: InputMessage = InputMessage.load(NULL_INPUT);
+  oldMessage: InputMessage = InputMessage.load(NULL_INPUT);
   lights: LightsStatus = new LightsStatus();
   config: TraktorZ1MK2Config = DEFAULT_Z1_MK2_CONFIG;
   lightsTimer?: engine.TimerID;
@@ -728,6 +757,19 @@ class TraktorZ1MK2Class {
     this.screens.sendAll(this.isDebugging);
   }
 
+  private getScreenForChannel(channel: InputChannel): TraktorScreen {
+    switch (channel) {
+      case "left":
+        return this.screens.screens[0];
+      case "main":
+        return this.screens.screens[1];
+      case "right":
+        return this.screens.screens[2];
+      default:
+        throw new Error(`Unknown channel: ${channel}`);
+    }
+  }
+
   incomingData(data: Uint8Array, _length: number): void {
     let message: InputMessage;
     try {
@@ -736,24 +778,16 @@ class TraktorZ1MK2Class {
       console.warn(`Error loading input message: ${e}`);
       return;
     }
-    const { lightsChanged, changeDescriptions } = updateEngineFromInput(
-      message,
-      this.currentInput,
-      this.isDebugging,
-    );
-    if (lightsChanged) {
-      updateLightsFromEngine(this.lights, this.config, false);
+    const change = new InputChange(this.oldMessage, message);
+    change.updateEngine();
+    if (change.changeDescription) {
+      const screen = this.getScreenForChannel(change.changeDescription.channel);
+      screen.clear();
+      screen.writeTextBig(change.changeDescription.label, 0, 0, 0, 1);
+      screen.writeTextBig(change.changeDescription.value, 0, 1, 0, 0);
+      this.screens.sendAll(this.isDebugging);
     }
-    changeDescriptions.forEach((desc, i) => {
-      if (desc) {
-        const screen = this.screens.screens[i];
-        screen.clear();
-        screen.writeTextBig(desc.label, 0, 0, 0, 1);
-        screen.writeTextBig(desc.value, 0, 1, 0, 0);
-      }
-    });
-    this.screens.sendAll(this.isDebugging);
-    this.currentInput = message;
+    this.oldMessage = message;
   }
 }
 
