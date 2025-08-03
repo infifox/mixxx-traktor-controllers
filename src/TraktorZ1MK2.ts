@@ -1,4 +1,9 @@
-import { Color, COLOR_CODES, DIM_COLORS } from "./TraktorColors";
+import {
+  colorCode,
+  defaultedColor,
+  dimColor,
+  dimColorWhen,
+} from "./TraktorColors";
 import { TraktorScreens } from "./TraktorScreen";
 
 /** The maximum value for a slider or knob. */
@@ -11,31 +16,50 @@ const NULL_INPUT = new Uint8Array([
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ]);
 
-type Z1MK2ColorConfig = {
-  theme: Color;
-  eqSwitch: Color | "default";
-  stemsSwitch: Color | "default";
-  fx: Color[];
-  prelistenToggle: Color | "default";
-  bottomLedsDefault: Color | "default";
-  bottomLeds: (Color | "default")[];
+type TraktorZ1MK2Config = {
+  colorTheme: string;
+  colorEqSwitch: string;
+  colorStemsSwitch: string;
+  colorFx1: string;
+  colorFx2: string;
+  colorFx3: string;
+  colorFx4: string;
+  colorFx5: string;
+  colorFx6: string;
+  colorFx7: string;
+  colorFx8: string;
+  colorPrelistenToggle: string;
+  colorBottomLedsDefault: string;
+  colorBottomLeds1: string;
+  colorBottomLeds2: string;
+  colorBottomLeds3: string;
+  colorBottomLeds4: string;
+  colorBottomLeds5: string;
+  colorBottomLeds6: string;
+  blinkBottomLeds: boolean;
 };
 
-const DEFAULT_Z1_MK2_COLOR_CONFIG: Z1MK2ColorConfig = {
-  theme: "blue",
-  eqSwitch: "default",
-  stemsSwitch: "default",
-  fx: ["red", "green", "blue", "yellow", "darkOrange"],
-  prelistenToggle: "default",
-  bottomLedsDefault: "default",
-  bottomLeds: [
-    "default",
-    "default",
-    "default",
-    "default",
-    "default",
-    "default",
-  ],
+const DEFAULT_Z1_MK2_CONFIG: TraktorZ1MK2Config = {
+  colorTheme: "blue",
+  colorEqSwitch: "default",
+  colorStemsSwitch: "default",
+  colorFx1: "red",
+  colorFx2: "green",
+  colorFx3: "blue",
+  colorFx4: "yellow",
+  colorFx5: "darkOrange",
+  colorFx6: "magenta",
+  colorFx7: "cyan",
+  colorFx8: "plum",
+  colorPrelistenToggle: "default",
+  colorBottomLedsDefault: "default",
+  colorBottomLeds1: "default",
+  colorBottomLeds2: "default",
+  colorBottomLeds3: "default",
+  colorBottomLeds4: "default",
+  colorBottomLeds5: "default",
+  colorBottomLeds6: "default",
+  blinkBottomLeds: false,
 };
 
 /**
@@ -220,13 +244,13 @@ class InputMessage {
 /** Provides a convenient interface to store light status and send it to the controller. */
 class LightsStatus {
   vuLevel: Record<Side, number> = { left: 0, right: 0 };
-  eqModeSwitch: Record<Side, Color> = { left: "black", right: "black" };
-  stemsModeSwitch: Record<Side, Color> = { left: "black", right: "black" };
-  fxToggle: Record<Side, Color> = { left: "black", right: "black" };
-  fxSwitches: Color[] = ["black", "black", "black", "black"];
-  fxFilterSwitch: Color = "black";
-  prelistenToggle: Record<Side, Color> = { left: "black", right: "black" };
-  bottomLeds: Record<Side, Color[]> = {
+  eqModeSwitch: Record<Side, string> = { left: "black", right: "black" };
+  stemsModeSwitch: Record<Side, string> = { left: "black", right: "black" };
+  fxToggle: Record<Side, string> = { left: "black", right: "black" };
+  fxSwitches: string[] = ["black", "black", "black", "black"];
+  fxFilterSwitch: string = "black";
+  prelistenToggle: Record<Side, string> = { left: "black", right: "black" };
+  bottomLeds: Record<Side, string[]> = {
     left: ["black", "black", "black", "black", "black", "black"],
     right: ["black", "black", "black", "black", "black", "black"],
   };
@@ -262,48 +286,48 @@ class LightsStatus {
     }
 
     // EQ Mode Switch Left
-    message[21] = COLOR_CODES[this.eqModeSwitch.left];
+    message[21] = colorCode(this.eqModeSwitch.left);
 
     // Stems Mode Switch Left
-    message[22] = COLOR_CODES[this.stemsModeSwitch.left];
+    message[22] = colorCode(this.stemsModeSwitch.left);
 
     // Unused (byte 23)
     message[23] = 0x00;
 
     // EQ Mode Switch Right
-    message[24] = COLOR_CODES[this.eqModeSwitch.right];
+    message[24] = colorCode(this.eqModeSwitch.right);
 
     // Stems Mode Switch Right
-    message[25] = COLOR_CODES[this.stemsModeSwitch.right];
+    message[25] = colorCode(this.stemsModeSwitch.right);
 
     // FX Toggle Left
-    message[26] = COLOR_CODES[this.fxToggle.left];
+    message[26] = colorCode(this.fxToggle.left);
 
     // FX Toggle Right
-    message[27] = COLOR_CODES[this.fxToggle.right];
+    message[27] = colorCode(this.fxToggle.right);
 
     // FX Switches
     for (var i = 0; i < 4; i++) {
-      message[28 + i] = COLOR_CODES[this.fxSwitches[i]];
+      message[28 + i] = colorCode(this.fxSwitches[i]);
     }
 
     // FX Filter Switch
-    message[32] = COLOR_CODES[this.fxFilterSwitch];
+    message[32] = colorCode(this.fxFilterSwitch);
 
     // Prelisten Toggle Left
-    message[33] = COLOR_CODES[this.prelistenToggle.left];
+    message[33] = colorCode(this.prelistenToggle.left);
 
     // Prelisten Toggle Right
-    message[34] = COLOR_CODES[this.prelistenToggle.right];
+    message[34] = colorCode(this.prelistenToggle.right);
 
     // Bottom LEDs Left (bytes 35-40)
     for (let i = 0; i < 6; i++) {
-      message[35 + i] = COLOR_CODES[this.bottomLeds.left[i]];
+      message[35 + i] = colorCode(this.bottomLeds.left[i]);
     }
 
     // Bottom LEDs Right (bytes 41-46)
     for (let i = 0; i < 6; i++) {
-      message[41 + i] = COLOR_CODES[this.bottomLeds.right[i]];
+      message[41 + i] = colorCode(this.bottomLeds.right[i]);
     }
 
     return message;
@@ -542,22 +566,23 @@ const updateEngineFromInput = (
 
 const updateLightsFromEngine = (
   lights: LightsStatus,
-  colors: Z1MK2ColorConfig,
+  config: TraktorZ1MK2Config,
   force: boolean,
 ): void => {
   const oldValue = lights.toMessage();
 
   // Update eq switch
-  const eqSwitchColor =
-    colors.eqSwitch === "default" ? colors.theme : colors.eqSwitch;
-  lights.eqModeSwitch.left = DIM_COLORS[eqSwitchColor];
-  lights.eqModeSwitch.right = DIM_COLORS[eqSwitchColor];
+  const eqSwitchColor = defaultedColor(config.colorEqSwitch, config.colorTheme);
+  lights.eqModeSwitch.left = dimColor(eqSwitchColor);
+  lights.eqModeSwitch.right = dimColor(eqSwitchColor);
 
   // Update stems switch
-  const stemsSwitchColor =
-    colors.stemsSwitch === "default" ? colors.theme : colors.stemsSwitch;
-  lights.stemsModeSwitch.left = DIM_COLORS[stemsSwitchColor];
-  lights.stemsModeSwitch.right = DIM_COLORS[stemsSwitchColor];
+  const stemsSwitchColor = defaultedColor(
+    config.colorStemsSwitch,
+    config.colorTheme,
+  );
+  lights.stemsModeSwitch.left = dimColor(stemsSwitchColor);
+  lights.stemsModeSwitch.right = dimColor(stemsSwitchColor);
 
   // Work out which effect presets are currently active
   const activeEffectPresets = new Set();
@@ -568,17 +593,23 @@ const updateLightsFromEngine = (
   }
 
   // Update FX switching buttons
-  for (let n = 1; n <= 5; n++) {
-    const filterSwitchColor = colors.fx[n - 1] ?? "blue";
-    const colorWithStatus = activeEffectPresets.has(n)
-      ? filterSwitchColor
-      : DIM_COLORS[filterSwitchColor];
-    if (n === 5) {
-      lights.fxFilterSwitch = colorWithStatus;
-    } else {
-      lights.fxSwitches[n - 1] = colorWithStatus;
+  for (let n = 1; n <= 4; n++) {
+    const colorKey = `colorFx${n}`;
+    if (!(colorKey in config)) {
+      throw new Error("Invalid color index");
     }
+    lights.fxSwitches[n - 1] = dimColorWhen(
+      defaultedColor(
+        config[colorKey as keyof typeof config] as string,
+        config.colorTheme,
+      ),
+      !activeEffectPresets.has(n),
+    );
   }
+  lights.fxFilterSwitch = dimColorWhen(
+    config.colorFx5,
+    !activeEffectPresets.has(5),
+  );
 
   // Update lights for each side
   for (const { channel, side } of mappings) {
@@ -586,23 +617,27 @@ const updateLightsFromEngine = (
 
     // Update FX toggle light
     const activeEffectPreset = engine.getValue(fxRack, "loaded_chain_preset");
-    if (activeEffectPreset < 1 || activeEffectPreset > 5) {
+    if (activeEffectPreset < 1 || activeEffectPreset > 8) {
       lights.fxToggle[side] = "black";
     } else {
-      const isActive = engine.getValue(fxRack, "enabled") !== 0;
-      const fxColor = colors.fx[activeEffectPreset - 1] ?? "blue";
-      lights.fxToggle[side] = isActive ? fxColor : DIM_COLORS[fxColor];
+      const colorKey = `colorFx${activeEffectPreset}`;
+      if (!(colorKey in config)) {
+        throw new Error("Invalid color index");
+      }
+      lights.fxToggle[side] = dimColorWhen(
+        defaultedColor(
+          config[colorKey as keyof typeof config] as string,
+          config.colorTheme,
+        ),
+        engine.getValue(fxRack, "enabled") === 0,
+      );
     }
 
     // Update prelisten toggle light
-    const prelistenEnabled = engine.getValue(channel, "pfl") !== 0;
-    const prelistenColor =
-      colors.prelistenToggle !== "default"
-        ? colors.prelistenToggle
-        : colors.theme;
-    lights.prelistenToggle[side] = prelistenEnabled
-      ? prelistenColor
-      : DIM_COLORS[prelistenColor];
+    lights.prelistenToggle[side] = dimColorWhen(
+      defaultedColor(config.colorPrelistenToggle, config.colorTheme),
+      engine.getValue(channel, "pfl") === 0,
+    );
 
     // Update VU meter
     lights.vuLevel[side] = engine.getValue(channel, "VuMeter") * 10;
@@ -610,14 +645,21 @@ const updateLightsFromEngine = (
     // Update bottom LEDs
     const isBeatActive = engine.getValue(channel, "beat_active") !== 0;
     for (let i = 0; i < 6; i++) {
-      const individualColor = colors.bottomLeds[i] ?? "default";
-      const color =
-        individualColor !== "default"
-          ? individualColor
-          : colors.bottomLedsDefault !== "default"
-            ? colors.bottomLedsDefault
-            : colors.theme;
-      lights.bottomLeds[side][i] = isBeatActive ? color : DIM_COLORS[color];
+      const colorKey = `colorBottomLeds${i + 1}`;
+      if (!(colorKey in config)) {
+        throw new Error("Invalid color index");
+      }
+      let color = defaultedColor(
+        defaultedColor(
+          config[colorKey as keyof typeof config] as string,
+          config.colorBottomLedsDefault,
+        ),
+        config.colorTheme,
+      );
+      if (config.blinkBottomLeds) {
+        color = dimColorWhen(color, !isBeatActive);
+      }
+      lights.bottomLeds[side][i] = color;
     }
   }
 
@@ -635,12 +677,16 @@ const updateLightsFromEngine = (
   }
 };
 
+const ensureValidBoolean = (value: engine.SettingValue | undefined) => {
+  return typeof value === "boolean" ? value : undefined;
+};
+
 class TraktorZ1MK2Class {
   id: string = "";
   isDebugging = false;
   currentInput: InputMessage = InputMessage.load(NULL_INPUT);
   lights: LightsStatus = new LightsStatus();
-  colorConfig: Z1MK2ColorConfig = DEFAULT_Z1_MK2_COLOR_CONFIG;
+  config: TraktorZ1MK2Config = DEFAULT_Z1_MK2_CONFIG;
   lightsTimer?: engine.TimerID;
   screens = new TraktorScreens(3);
 
@@ -651,10 +697,15 @@ class TraktorZ1MK2Class {
       console.log(`TraktorZ1Mk2 initialized with id: ${id}`);
     }
 
-    updateLightsFromEngine(this.lights, this.colorConfig, true);
+    for (const key in this.config) {
+      (this.config as Record<string, unknown>)[key] =
+        engine.getSetting(key) ?? (this.config as Record<string, unknown>)[key];
+    }
+
+    updateLightsFromEngine(this.lights, this.config, true);
 
     this.lightsTimer = engine.beginTimer(25, () => {
-      updateLightsFromEngine(this.lights, this.colorConfig, false);
+      updateLightsFromEngine(this.lights, this.config, false);
     });
 
     this.screens.screens[1].writeTextBig("Mixxx", 0, 0, 0, 0);
@@ -691,7 +742,7 @@ class TraktorZ1MK2Class {
       this.isDebugging,
     );
     if (lightsChanged) {
-      updateLightsFromEngine(this.lights, this.colorConfig, false);
+      updateLightsFromEngine(this.lights, this.config, false);
     }
     changeDescriptions.forEach((desc, i) => {
       if (desc) {

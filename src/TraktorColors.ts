@@ -1,42 +1,5 @@
 /** Represents an RGB color code which can be displayed by a light. */
-export type Color =
-  | "black"
-  | "red"
-  | "redDim"
-  | "darkOrange"
-  | "darkOrangeDim"
-  | "lightOrange"
-  | "lightOrangeDim"
-  | "warmOrange"
-  | "warmOrangeDim"
-  | "warmYellow"
-  | "yellow"
-  | "yellowDim"
-  | "lime"
-  | "limeDim"
-  | "green"
-  | "greenDim"
-  | "mint"
-  | "mintDim"
-  | "cyan"
-  | "cyanDim"
-  | "turquoise"
-  | "turquoiseDim"
-  | "blue"
-  | "blueDim"
-  | "plum"
-  | "plumDim"
-  | "violet"
-  | "violetDim"
-  | "purple"
-  | "purpleDim"
-  | "magenta"
-  | "magentaDim"
-  | "fuschiaDark"
-  | "fuschia"
-  | "white";
-
-export const COLOR_CODES: Record<Color, number> = {
+const COLOR_CODES: Record<string, number> = {
   black: 0x00,
   redDim: 0x04,
   red: 0x06,
@@ -44,8 +7,8 @@ export const COLOR_CODES: Record<Color, number> = {
   darkOrange: 0x0a,
   lightOrangeDim: 0x0c,
   lightOrange: 0x0e,
-  warmOrangeDim: 0x10,
-  warmOrange: 0x12,
+  warmYellowDim: 0x10,
+  warmYellow: 0x12,
   yellowDim: 0x14,
   yellow: 0x16,
   limeDim: 0x18,
@@ -71,23 +34,20 @@ export const COLOR_CODES: Record<Color, number> = {
   fuschiaDark: 0x40,
   fuschia: 0x42,
   white: 0x46,
-  warmYellow: 0x12,
 };
 
 /**
  * Mapping from each color to the dim equivalent of that color if it exists.
  */
-export const DIM_COLORS: Record<Color, Color> = {
-  black: "black",
+const DIM_COLORS: Record<string, string> = {
   redDim: "redDim",
   red: "redDim",
   darkOrangeDim: "darkOrangeDim",
   darkOrange: "darkOrangeDim",
   lightOrangeDim: "lightOrangeDim",
   lightOrange: "lightOrangeDim",
-  warmOrangeDim: "warmOrangeDim",
-  warmOrange: "warmOrangeDim",
-  warmYellow: "warmOrangeDim",
+  warmYellowDim: "warmYellowDim",
+  warmYellow: "warmYellowDim",
   yellowDim: "yellowDim",
   yellow: "yellowDim",
   limeDim: "limeDim",
@@ -112,5 +72,16 @@ export const DIM_COLORS: Record<Color, Color> = {
   magenta: "magentaDim",
   fuschiaDark: "fuschiaDark",
   fuschia: "fuschiaDark",
-  white: "white",
+  black: "black",
+  white: "black",
 };
+
+export const defaultedColor = (color: string, defaultColor: string): string =>
+  color === "default" ? defaultColor : color;
+
+export const dimColor = (color: string): string => DIM_COLORS[color] ?? color;
+
+export const dimColorWhen = (color: string, condition: boolean): string =>
+  condition ? dimColor(color) : color;
+
+export const colorCode = (color: string): number => COLOR_CODES[color] ?? 0;
