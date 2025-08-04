@@ -78,13 +78,18 @@ type TraktorZ1MK2Config = {
   colorFx8: string;
   colorPrelistenToggle: string;
   colorBottomLedsDefault: string;
+  colorEndWarning: string;
+  colorActiveLoop: string;
   colorBottomLeds1: string;
   colorBottomLeds2: string;
   colorBottomLeds3: string;
   colorBottomLeds4: string;
   colorBottomLeds5: string;
   colorBottomLeds6: string;
+
   blinkBottomLeds: boolean;
+  endWarning: boolean;
+  activeLoop: boolean;
 };
 
 const DEFAULT_Z1_MK2_CONFIG: TraktorZ1MK2Config = {
@@ -122,13 +127,18 @@ const DEFAULT_Z1_MK2_CONFIG: TraktorZ1MK2Config = {
   colorFx8: "purple",
   colorPrelistenToggle: "default",
   colorBottomLedsDefault: "default",
+  colorEndWarning: "red",
+  colorActiveLoop: "green",
   colorBottomLeds1: "default",
   colorBottomLeds2: "default",
   colorBottomLeds3: "default",
   colorBottomLeds4: "default",
   colorBottomLeds5: "default",
   colorBottomLeds6: "default",
+
   blinkBottomLeds: false,
+  endWarning: true,
+  activeLoop: true,
 };
 
 type ControllerState = {
@@ -922,10 +932,7 @@ class TraktorZ1MK2Class {
         let color = defaultColor;
         if (value >= 1 && value <= 8) {
           const colorKey = `colorFx${value}` as keyof TraktorZ1MK2Config;
-          color = defaultedColor(
-            this.config[colorKey] as string,
-            DEFAULT_Z1_MK2_CONFIG[colorKey] as string,
-          );
+          color = this.config[colorKey] as string;
         }
         return dimColorWhen(
           color,
@@ -1005,7 +1012,7 @@ class TraktorZ1MK2Class {
           : (this.config[
               `fxButton${n}Push` as keyof TraktorZ1MK2Config
             ] as ButtonAction),
-        this.config[`colorFx${n}` as keyof TraktorZ1MK2Config] as string,
+        this.config.colorTheme,
       );
     }
     this.updateButtonLight(
@@ -1016,6 +1023,8 @@ class TraktorZ1MK2Class {
     );
 
     for (const group of ["left" as const, "right" as const]) {
+      const engineGroup = this.getEngineGroup(group);
+
       // Update buttons
       this.updateButtonLight(
         group,
@@ -1054,12 +1063,11 @@ class TraktorZ1MK2Class {
       // Update VU meter
       this.controller.lights.setVuValue(
         group,
-        engine.getValue(this.getEngineGroup(group), "VuMeter") * 10,
+        engine.getValue(engineGroup, "VuMeter") * 10,
       );
 
       // Update bottom LEDs
-      const isBeatActive =
-        engine.getValue(this.getEngineGroup(group), "beat_active") !== 0;
+      const isBeatActive = engine.getValue(engineGroup, "beat_active") !== 0;
       for (let n = 1; n <= 6; n++) {
         const colorKey = `colorBottomLeds${n}`;
         if (!(colorKey in this.config)) {
@@ -1075,6 +1083,18 @@ class TraktorZ1MK2Class {
           ),
           DEFAULT_Z1_MK2_CONFIG.colorTheme,
         );
+        if (
+          this.config.endWarning &&
+          engine.getValue(engineGroup, "end_of_track") === 1
+        ) {
+          color = dimColorWhen(this.config.colorEndWarning, !isBeatActive);
+        }
+        if (
+          this.config.activeLoop &&
+          engine.getValue(engineGroup, "loop_enabled")
+        ) {
+          color = this.config.colorActiveLoop;
+        }
         if (this.config.blinkBottomLeds) {
           color = dimColorWhen(color, !isBeatActive);
         }
