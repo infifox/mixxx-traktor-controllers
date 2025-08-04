@@ -690,7 +690,9 @@ class TraktorZ1MK2Class {
             break;
           default:
             if (this.isDebugging) {
-              console.warn(`No button up action for ${group} group: ${action}`);
+              console.debug(
+                `No button up action for ${group} group: ${action}`,
+              );
             }
         }
         break;
