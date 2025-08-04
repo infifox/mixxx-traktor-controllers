@@ -14,6 +14,7 @@ import {
 } from "./Z1MK2Controller";
 
 const SCREEN_RESET_MS = 800;
+const SOFT_TAKEOVER_MARGIN = 0.05;
 
 type ButtonAction =
   | "shift"
@@ -167,29 +168,48 @@ type ScreenStatus =
     }
   | {
       kind: "softTakeover";
-      value: string;
-      target: string;
+      value: number;
+      target: number;
+      format: "signed" | "unsigned";
+      label: string;
     };
 
 type Side = "left" | "right";
 
 class TraktorZ1MK2Class {
+  /** Controller ID in Mixxx. */
   id: string = "";
+
+  /** Are we in controller debugging mode.  */
   isDebugging = false;
+
+  /** Configuration from Mixxx. */
   config: TraktorZ1MK2Config = Object.assign({}, DEFAULT_Z1_MK2_CONFIG);
+
+  /** Timer to update the lights and animations. */
   lightsTimer?: engine.TimerID;
+
+  /** Time offset for animations. */
+  time = 0;
+
+  /** Display screens */
   screens: Record<ControllerGroup, TraktorScreen> = {
     left: new TraktorScreen(0),
     main: new TraktorScreen(1),
     right: new TraktorScreen(2),
   };
+
+  /** Timers to return to the homescreen for each screen */
   screenResetTimerIds: Record<ControllerGroup, engine.TimerID | undefined> = {
     left: undefined,
     main: undefined,
     right: undefined,
   };
 
+  /** Controller abstraction. */
   controller = new Controller();
+
+  /** Current state. */
   controllerState: ControllerState = {
     shift: false,
     decksToggle: {
@@ -201,6 +221,8 @@ class TraktorZ1MK2Class {
       right: false,
     },
   };
+
+  /** Current content for each screen. */
   screenStatuses: Record<ControllerGroup, ScreenStatus> = {
     left: { kind: "home" },
     main: { kind: "home" },
@@ -222,6 +244,17 @@ class TraktorZ1MK2Class {
     this.syncLights();
     this.lightsTimer = engine.beginTimer(25, () => {
       this.syncLights();
+
+      const isAnyScreenAnimated = Object.values(this.screenStatuses).some(
+        (status) => status.kind === "softTakeover",
+      );
+
+      if (isAnyScreenAnimated) {
+        this.time++;
+        this.syncScreens();
+      } else if (this.time > 0) {
+        this.time = 0;
+      }
     });
 
     this.syncScreens();
@@ -293,6 +326,20 @@ class TraktorZ1MK2Class {
     }
   }
 
+  private unscaleValue(
+    value: number,
+    scale: "flat" | "gain" | "crossfader",
+  ): number {
+    switch (scale) {
+      case "flat":
+        return value;
+      case "gain":
+        return this.unscaleGain(value);
+      case "crossfader":
+        return (value + 1) / 2;
+    }
+  }
+
   /** Formats a numerical value for display on a screen */
   private formatValueForScreen(
     value: number,
@@ -317,6 +364,7 @@ class TraktorZ1MK2Class {
     format,
     scale,
     showValueScreen = false,
+    softTakeover = false,
   }: {
     controllerGroup: ControllerGroup;
     controllerKnobName: ControllerKnobName;
@@ -326,6 +374,7 @@ class TraktorZ1MK2Class {
     format: "signed" | "unsigned";
     scale: "flat" | "gain" | "crossfader";
     showValueScreen?: boolean;
+    softTakeover?: boolean;
   }) {
     const value = this.controller.getKnobIfChanged(
       controllerGroup,
@@ -333,6 +382,33 @@ class TraktorZ1MK2Class {
     );
 
     if (value === undefined) return;
+
+    // Check for soft takeover if enabled
+    if (softTakeover) {
+      const existingValue = this.unscaleValue(
+        engine.getValue(engineGroup, engineName),
+        scale,
+      );
+
+      if (Math.abs(existingValue - value) > SOFT_TAKEOVER_MARGIN) {
+        // Value is out of range, diplay a message on the screen instead of changing it
+        this.screenStatuses[controllerGroup] = {
+          kind: "softTakeover",
+          value: value,
+          target: existingValue,
+          format,
+          label,
+        };
+        this.scheduleScreenReset(controllerGroup, SCREEN_RESET_MS);
+        this.syncScreens();
+        return;
+      } else {
+        if (this.screenStatuses[controllerGroup]?.kind === "softTakeover") {
+          this.screenStatuses[controllerGroup] = { kind: "home" };
+          this.syncScreens();
+        }
+      }
+    }
 
     const scaledValue = this.scaleValue(value, scale);
 
@@ -505,6 +581,7 @@ class TraktorZ1MK2Class {
               );
             }
         }
+        break;
       case "left":
       case "right":
         switch (action) {
@@ -593,6 +670,7 @@ class TraktorZ1MK2Class {
               );
             }
         }
+        break;
       case "left":
       case "right":
         switch (action) {
@@ -695,6 +773,7 @@ class TraktorZ1MK2Class {
           engineName: "volume",
           scale: "flat",
           format: "unsigned",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -704,6 +783,7 @@ class TraktorZ1MK2Class {
           engineName: "volume",
           scale: "flat",
           format: "unsigned",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -713,6 +793,7 @@ class TraktorZ1MK2Class {
           engineName: "volume",
           scale: "flat",
           format: "unsigned",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -722,6 +803,7 @@ class TraktorZ1MK2Class {
           engineName: "volume",
           scale: "flat",
           format: "unsigned",
+          softTakeover: true,
         });
       } else {
         this.syncKnobToEngine({
@@ -731,7 +813,8 @@ class TraktorZ1MK2Class {
           engineGroup,
           engineName: "pregain",
           scale: "gain",
-          format: "unsigned",
+          format: "signed",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -741,6 +824,7 @@ class TraktorZ1MK2Class {
           engineName: "parameter3",
           scale: "gain",
           format: "signed",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -750,6 +834,7 @@ class TraktorZ1MK2Class {
           engineName: "parameter2",
           scale: "gain",
           format: "signed",
+          softTakeover: true,
         });
         this.syncKnobToEngine({
           controllerGroup,
@@ -759,6 +844,7 @@ class TraktorZ1MK2Class {
           engineName: "parameter1",
           scale: "gain",
           format: "signed",
+          softTakeover: true,
         });
       }
 
@@ -781,6 +867,7 @@ class TraktorZ1MK2Class {
         engineName: "volume",
         scale: "flat",
         format: "unsigned",
+        softTakeover: true,
       });
     }
 
@@ -1376,6 +1463,30 @@ class TraktorZ1MK2Class {
     });
   }
 
+  private drawSoftTakeoverScreen(
+    screen: TraktorScreen,
+    data: Extract<ScreenStatus, { kind: "softTakeover" }>,
+  ) {
+    screen.clear();
+    screen.writeText({
+      x: 0,
+      y: 0,
+      scale: 2,
+      text: data.label,
+      width: 6,
+      height: 1,
+    });
+    screen.drawSoftTakeoverChart({
+      x: 0,
+      y: 32,
+      width: 128,
+      height: 32,
+      target: data.target,
+      value: data.value,
+      time: this.time,
+    });
+  }
+
   /** Sync data to controller screens */
   private syncScreens() {
     for (const group of ["main" as const, "left" as const, "right" as const]) {
@@ -1386,7 +1497,7 @@ class TraktorZ1MK2Class {
           this.drawValueScreen(screen, status);
           break;
         case "softTakeover":
-          screen.clear();
+          this.drawSoftTakeoverScreen(screen, status);
           break;
         case "home":
           if (group === "main") {

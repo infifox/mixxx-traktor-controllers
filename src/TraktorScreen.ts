@@ -458,4 +458,64 @@ export class TraktorScreen {
       });
     }
   }
+
+  drawSoftTakeoverChart({
+    x,
+    y,
+    width,
+    height,
+    value,
+    target,
+    time,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    value: number;
+    target: number;
+    time: number;
+  }) {
+    this.drawBox({ x, y, width, height, filled: false });
+
+    const targetX = x + Math.round(target * width);
+    const valueX = x + Math.round(value * width);
+    const minX = Math.min(targetX, valueX);
+    const maxX = Math.max(targetX, valueX);
+    const dir = target > value ? 1 : -1;
+    const halfHeight = Math.floor(height / 2);
+
+    // Draw pattern to indicate change
+    for (let drawY = y; drawY < y + height; drawY++) {
+      for (let drawX = minX; drawX < maxX; drawX++) {
+        const c =
+          (50_000 -
+            time * dir +
+            drawX +
+            Math.abs(drawY - y - halfHeight) * dir) %
+          15;
+        if (c > 10) {
+          this.setPixel(drawX, drawY, true);
+        }
+      }
+    }
+
+    // Draw line for target
+    this.drawBox({
+      x: targetX,
+      y: y,
+      width: 1,
+      height,
+      filled: true,
+    });
+
+    // Draw line for value
+    this.drawBox({
+      x: valueX,
+      y: y,
+      width: 1,
+      height,
+      filled: true,
+    });
+  }
 }
