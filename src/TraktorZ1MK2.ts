@@ -1205,40 +1205,65 @@ class TraktorZ1MK2Class {
 
     screen.clear();
     screen.writeText({
-      text: Math.round(volume * 100).toString(),
-      scale: 2,
       x: 0,
-      y: 32,
-      width: 5,
-      height: 1,
+      y: 0,
+      scale: 1,
+      width: 1,
+      height: 4,
+      text: "VOL",
+    });
+    screen.drawVertVolGauge({
+      x: 14,
+      y: 2,
+      width: 10,
+      height: 61,
+      value: volume,
+    });
+
+    screen.writeText({
+      x: 32,
+      y: 0,
+      scale: 1,
+      width: 1,
+      height: 4,
+      text: "EQ",
     });
     screen.drawEqGauge({
-      x: 65,
-      y: 4,
+      x: 44,
+      y: 2,
       width: 14,
-      height: 57,
-      value: gain,
+      height: 61,
+      value: low,
     });
     screen.drawEqGauge({
-      x: 81,
-      y: 4,
+      x: 60,
+      y: 2,
       width: 14,
-      height: 57,
-      value: hi,
-    });
-    screen.drawEqGauge({
-      x: 97,
-      y: 4,
-      width: 14,
-      height: 57,
+      height: 61,
       value: mid,
     });
     screen.drawEqGauge({
-      x: 113,
-      y: 4,
+      x: 76,
+      y: 2,
       width: 14,
-      height: 57,
-      value: low,
+      height: 61,
+      value: hi,
+    });
+
+    screen.writeText({
+      x: 96,
+      y: 0,
+      scale: 1,
+      width: 1,
+      height: 4,
+      text: "GAIN",
+    });
+    screen.drawEqGauge({
+      x: 108,
+      y: 2,
+      width: 20,
+      height: 61,
+      value: gain,
     });
   }
 
@@ -1250,70 +1275,79 @@ class TraktorZ1MK2Class {
     const other = engine.getValue(`[Channel${engineGroup[8]}_Stem3]`, "volume");
     const vocal = engine.getValue(`[Channel${engineGroup[8]}_Stem4]`, "volume");
     screen.clear();
+    screen.writeText({
+      x: 0,
+      y: 0,
+      scale: 1,
+      width: 1,
+      height: 4,
+      text: "VOL",
+    });
     screen.drawVertVolGauge({
-      x: 5,
+      x: 14,
       y: 2,
       width: 10,
-      height: 60,
+      height: 61,
       value: volume,
     });
+
     screen.writeText({
       text: "Drums",
       scale: 1,
-      x: 20,
+      x: 28,
       y: 0,
       width: 5,
       height: 1,
     });
     screen.drawHorzVolGauge({
-      x: 78,
+      x: 82,
       y: 2,
-      width: 50,
+      width: 46,
       height: 12,
       value: drums,
     });
     screen.writeText({
       text: "Bass",
       scale: 1,
-      x: 20,
+      x: 28,
       y: 16,
       width: 5,
       height: 1,
     });
     screen.drawHorzVolGauge({
-      x: 78,
+      x: 82,
       y: 18,
-      width: 50,
+      width: 46,
       height: 12,
       value: bass,
     });
     screen.writeText({
       text: "Other",
       scale: 1,
-      x: 20,
+      x: 28,
       y: 32,
       width: 5,
       height: 1,
     });
     screen.drawHorzVolGauge({
-      x: 78,
+      x: 82,
       y: 34,
-      width: 50,
+      width: 46,
       height: 12,
       value: other,
     });
     screen.writeText({
       text: "Vocal",
       scale: 1,
-      x: 20,
+      x: 28,
       y: 48,
       width: 5,
       height: 1,
     });
     screen.drawHorzVolGauge({
-      x: 78,
+      x: 82,
       y: 50,
-      width: 50,
+      width: 46,
       height: 12,
       value: vocal,
     });

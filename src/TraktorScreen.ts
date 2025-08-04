@@ -320,10 +320,16 @@ export class TraktorScreen {
       filled: true,
     });
 
-    // Draw two dotted vertical lines
+    // Draw dotted vertical lines
+    const xDotOffset = Math.floor(width / 10) * 3;
     for (let drawY = y; drawY < y + height; drawY += 4) {
-      this.setPixel(midX - 2, drawY, true);
-      this.setPixel(midX + 2, drawY, true);
+      for (
+        let drawX = midX - xDotOffset;
+        drawX <= midX + xDotOffset;
+        drawX += 4
+      ) {
+        this.setPixel(drawX, drawY, true);
+      }
     }
 
     if (value > 0.5) {
