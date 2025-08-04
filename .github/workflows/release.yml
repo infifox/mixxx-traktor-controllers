@@ -54,6 +54,23 @@ jobs:
             echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## Infinifox Mixxx Traktor Controller Mappings
+
+          This release contains the compiled controller script and configuration files for the Native Instruments Traktor Kontrol Z1 MK2 in Mixxx.
+
+          ### Installation Instructions
+          1. Download the `infinifox-mixxx-traktor-controller-mappings` file
+          2. Extract the contents to your [Mixxx controllers directory](https://github.com/mixxxdj/mixxx/wiki/Controller-Mapping-File-Locations)
+          3. Restart Mixxx
+          4. Go to Preferences → Controllers and enable your controller
+
+          Built from commit: ${{ github.sha }}
+          EOF
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
