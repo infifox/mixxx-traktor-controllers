@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsdown && cp res/*.xml dist/",
-    "install": "cp dist/* ~/.mixxx/controllers/",
+    "copy": "cp dist/* ~/.mixxx/controllers/",
     "convert-font": "node ./src/convert-font.ts"
   }
 }
