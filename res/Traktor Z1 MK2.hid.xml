@@ -17,6 +17,28 @@
         </scriptfiles>
     </controller>
     <settings>
+        <group label="Gain Mapping">
+            <option
+                variable="mapMainGain"
+                label="Map Main Gain (enable only if not using this controller as your Main audio device)"
+                description="This will map the value of the Main Volume knob to the
+                    Main Gain knob in Mixxx. Don't use this if you're using the
+                    onboard audio of the controller, as the controller processes gain
+                    internally and adjusting it in Mixxx too will only degrade your audio
+                    quality."
+                type="boolean"
+            />
+            <option
+                variable="mapHeadphoneGain"
+                label="Map Headphone Gain (enable only if not using this controller as your Headphone audio device)"
+                description="This will map the value of the Headphone Volume knob to the
+                    Headphone Gain knob in Mixxx. Don't use this if you're using the
+                    onboard audio of the controller, as the controller processes gain
+                    internally and adjusting it in Mixxx too will only degrade your audio
+                    quality."
+                type="boolean"
+            />
+        </group>
         <group label="FX Select Buttons">
             <option
                 variable="fxButton1Push"

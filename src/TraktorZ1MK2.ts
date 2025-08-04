@@ -1,9 +1,4 @@
-import {
-  colorCode,
-  defaultedColor,
-  dimColor,
-  dimColorWhen,
-} from "./TraktorColors";
+import { defaultedColor, dimColor, dimColorWhen } from "./TraktorColors";
 import { TraktorScreen } from "./TraktorScreen";
 import {
   Controller,
@@ -45,6 +40,9 @@ type ButtonAction =
   | "disabled";
 
 type TraktorZ1MK2Config = {
+  mapMainGain: boolean;
+  mapHeadphoneGain: boolean;
+
   fxButton1Push: ButtonAction;
   fxButton1ShiftPush: ButtonAction;
   fxButton2Push: ButtonAction;
@@ -94,6 +92,9 @@ type TraktorZ1MK2Config = {
 };
 
 const DEFAULT_Z1_MK2_CONFIG: TraktorZ1MK2Config = {
+  mapMainGain: false,
+  mapHeadphoneGain: false,
+
   fxButton1Push: "fx1",
   fxButton1ShiftPush: "fx1",
   fxButton2Push: "fx2",
@@ -365,6 +366,7 @@ class TraktorZ1MK2Class {
     scale,
     showValueScreen = false,
     softTakeover = false,
+    unmapped = false,
   }: {
     controllerGroup: ControllerGroup;
     controllerKnobName: ControllerKnobName;
@@ -375,6 +377,7 @@ class TraktorZ1MK2Class {
     scale: "flat" | "gain" | "crossfader";
     showValueScreen?: boolean;
     softTakeover?: boolean;
+    unmapped?: boolean;
   }) {
     const value = this.controller.getKnobIfChanged(
       controllerGroup,
@@ -412,7 +415,9 @@ class TraktorZ1MK2Class {
 
     const scaledValue = this.scaleValue(value, scale);
 
-    engine.setValue(engineGroup, engineName, scaledValue);
+    if (!unmapped) {
+      engine.setValue(engineGroup, engineName, scaledValue);
+    }
 
     if (this.isDebugging) {
       console.debug(
@@ -726,6 +731,7 @@ class TraktorZ1MK2Class {
       scale: "gain",
       format: "unsigned",
       showValueScreen: true,
+      unmapped: !this.config.mapMainGain,
     });
     this.syncKnobToEngine({
       controllerGroup: "main",
@@ -746,6 +752,7 @@ class TraktorZ1MK2Class {
       scale: "gain",
       format: "unsigned",
       showValueScreen: true,
+      unmapped: !this.config.mapHeadphoneGain,
     });
     if (!this.config.disableCrossfader) {
       this.syncKnobToEngine({
