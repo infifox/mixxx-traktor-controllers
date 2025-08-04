@@ -17,6 +17,246 @@
         </scriptfiles>
     </controller>
     <settings>
+        <group label="FX Select Buttons">
+            <option
+                variable="fxButton1Push"
+                label="FX Button 1 Push"
+                type="enum"
+            >
+                <value label="Select FX 1">fx1</value>
+                <value label="Select FX 5">fx5</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton1ShiftPush"
+                label="FX Button 1 SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select FX 1">fx1</value>
+                <value label="Select FX 5">fx5</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton2Push"
+                label="FX Button 2 Push"
+                type="enum"
+            >
+                <value label="Select FX 2">fx2</value>
+                <value label="Select FX 6">fx6</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton2ShiftPush"
+                label="FX Button 2 SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select FX 2">fx2</value>
+                <value label="Select FX 6">fx6</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton3Push"
+                label="FX Button 3 Push"
+                type="enum"
+            >
+                <value label="Select FX 3">fx3</value>
+                <value label="Select FX 7">fx7</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton3ShiftPush"
+                label="FX Button 3 SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select FX 3">fx3</value>
+                <value label="Select FX 7">fx7</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton4Push"
+                label="FX Button 4 Push"
+                type="enum"
+            >
+                <value label="Select FX 4">fx4</value>
+                <value label="Select FX 8">fx8</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="fxButton4ShiftPush"
+                label="FX Button 4 SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select FX 4">fx4</value>
+                <value label="Select FX 8">fx8</value>
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+            </option>
+            <option
+                variable="filterButtonPush"
+                label="Filter Button Push"
+                type="enum"
+            >
+                <value label="Select FX 5">fx5</value>
+                <value label="Shift">shift</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="EQ Mode Button">
+            <option
+                variable="eqModeButtonPush"
+                label="EQ Mode Push"
+                type="enum"
+            >
+                <value label="Select EQ Mode">selectEqMode</value>
+                <value label="Select Deck A/C">selectDeckAC</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option
+                variable="eqModeButtonShiftPush"
+                label="EQ Mode SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select EQ Mode">selectEqMode</value>
+                <value label="Select Deck A/C">selectDeckAC</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="Stem Mode Button">
+            <option
+                variable="stemModeButtonPush"
+                label="Stem Mode Push"
+                type="enum"
+            >
+                <value label="Select Stem Mode">selectStemMode</value>
+                <value label="Select Deck B/D">selectDeckBD</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option
+                variable="stemModeButtonShiftPush"
+                label="Stem Mode SHIFT+Push"
+                type="enum"
+            >
+                <value label="Select Stem Mode">selectStemMode</value>
+                <value label="Select Deck B/D">selectDeckBD</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="Top Button">
+            <option
+                variable="topButtonPush"
+                label="Top Button Push"
+                type="enum"
+            >
+                <value label="Toggle Decks AB/CD">toggleDecks</value>
+                <value label="Toggle Eq/Stem">toggleEqStem</value>
+                <value label="Toggle Recording">toggleRecording</value>
+                <value label="Toggle Live Streaming">toggleLive</value>
+                <value label="Select FX 6">fx6</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="Mixer FX On Buttons">
+            <option variable="fxTogglePush" label="FX Push" type="enum">
+                <value label="Toggle FX On/Off">toggleFx</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option
+                variable="fxToggleShiftPush"
+                label="FX SHIFT+Push"
+                type="enum"
+            >
+                <value label="Toggle FX On/Off">toggleFx</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="Prelisten Buttons">
+            <option
+                variable="prelistenTogglePush"
+                label="Prelisten Push"
+                type="enum"
+            >
+                <value label="Toggle Prelisten">togglePrelisten</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option
+                variable="prelistenToggleShiftPush"
+                label="Prelisten SHIFT+Push"
+                type="enum"
+            >
+                <value label="Toggle Prelisten">togglePrelisten</value>
+                <value label="Play">play</value>
+                <value label="Sync">sync</value>
+                <value label="Cue">cue</value>
+                <value label="Skip to Start">skipToStart</value>
+                <value label="← Nudge">nudgeLeft</value>
+                <value label="→ Nudge">nudgeRight</value>
+                <value label="Disabled">disabled</value>
+            </option>
+        </group>
+        <group label="Crossfader">
+            <option
+                variable="disableCrossfader"
+                label="Disable Crossfader"
+                type="boolean"
+            />
+        </group>
         <group label="Colors">
             <group label="Device Setup">
                 <option
