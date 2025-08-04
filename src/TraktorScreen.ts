@@ -136,125 +136,65 @@ export class TraktorScreen {
     }
   }
 
-  /**
-   * Writes text do the display, wrapping if necessary. Wrapping can break anywhere
-   * in the word, not just within whitespace. If there is too much text to fit within
-   * the allowed space, it will be truncated.
-   *
-   * Any characters not contained in the font dataset will be replaced with a "~"
-   *
-   * @param text The text to write to the display.
-   * @param left Left margin for the text from the left of the screen, in characters.
-   * @param top Top margin for the text from the top of the screen, in characters.
-   * @param right Right margin for the text from the right of the screen, in characters.
-   * @param bottom Bottom margin for the text from the bottom of the screen, in characters.
-   */
-  writeText(
-    text: string,
-    left: number,
-    top: number,
-    right: number,
-    bottom: number,
-  ) {
-    // Calculate available space in pixels
-    const availableWidth = SCREEN_WIDTH / FONT_CHAR_WIDTH - left - right;
-    const availableHeight =
-      (SCREEN_ROWS_COUNT * 8) / FONT_CHAR_HEIGHT - top - bottom;
-
-    if (availableWidth <= 0 || availableHeight <= 0) {
-      return; // No space to write
+  /** Sets a pixel on the screen at the given coordinates. */
+  setPixel(x: number, y: number, value: boolean): void {
+    // Check bounds
+    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_ROWS_COUNT * 8) {
+      return;
     }
 
-    let currentX = left;
-    let currentY = top;
+    // Calculate which row and bit position
+    const row = Math.floor(y / 8);
+    const bitPosition = y % 8;
 
-    for (let i = 0; i < text.length && currentY < top + availableHeight; i++) {
-      let char = text[i];
-
-      // Replace unknown characters with ~
-      if (!(char in FONT_DATA)) {
-        char = "~";
-      }
-
-      // Check if we need to wrap to next line
-      if (currentX >= left + availableWidth) {
-        currentX = left;
-        currentY++;
-        if (currentY >= top + availableHeight) {
-          break; // Out of vertical space
-        }
-      }
-
-      // Get font data for this character
-      const [topSection, bottomSection] = FONT_DATA[char];
-
-      // Calculate pixel positions
-      const pixelX = currentX * FONT_CHAR_WIDTH;
-      const pixelY = currentY * FONT_CHAR_HEIGHT;
-
-      // Render character to screen buffer
-      for (let col = 0; col < FONT_CHAR_WIDTH; col++) {
-        const screenCol = pixelX + col;
-        if (screenCol >= SCREEN_WIDTH) break;
-
-        // Top half (first 8 rows of character)
-        const topRowStart = Math.floor(pixelY / 8);
-        if (topRowStart < SCREEN_ROWS_COUNT) {
-          this.rows[topRowStart][screenCol] = topSection[col];
-        }
-
-        // Bottom half (second 8 rows of character)
-        const bottomRowStart = Math.floor((pixelY + 8) / 8);
-        if (bottomRowStart < SCREEN_ROWS_COUNT) {
-          this.rows[bottomRowStart][screenCol] = bottomSection[col];
-        }
-      }
-      currentX++;
+    if (value) {
+      // Clear the bit (0 means pixel is on in this display format)
+      this.rows[row][x] &= ~(1 << bitPosition);
+    } else {
+      // Set the bit (1 means pixel is off in this display format)
+      this.rows[row][x] |= 1 << bitPosition;
     }
   }
 
   /**
-   * Writes text do the display, at double the normal size. This will work in the
-   * same way as writeText, but every pixel is doubled in size. The margins are
-   * still specified as small sized characters, not doubles.
+   * Writes text do the display.
    *
-   * @param text The text to write to the display.
-   * @param left Left margin for the text from the left of the screen, in characters.
-   * @param top Top margin for the text from the top of the screen, in characters.
-   * @param right Right margin for the text from the right of the screen, in characters.
-   * @param bottom Bottom margin for the text from the bottom of the screen, in characters.
+   * - *text* - text to write
+   * - *scale* - scale to write text at, must be an integer >= 1
+   * - *x* - x offset in pixels
+   * - *y* - y offset in pixels
+   * - *width* - max width in characters
+   * - *height* - max height in characters
+   * - *invert* - inverts every pixel drawn
    */
-  writeTextBig(
-    text: string,
-    left: number,
-    top: number,
-    right: number,
-    bottom: number,
-  ) {
-    const scale = 2;
+  writeText({
+    text,
+    scale,
+    x,
+    y,
+    width,
+    height,
+    invert = false,
+  }: {
+    text: string;
+    scale: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    invert?: boolean;
+  }) {
     const scaledCharWidth = FONT_CHAR_WIDTH * scale;
     const scaledCharHeight = FONT_CHAR_HEIGHT * scale;
 
-    // Calculate available space in characters (accounting for scaling)
-    const availableWidthChars = Math.floor(
-      (SCREEN_WIDTH - left * scaledCharWidth - right * scaledCharWidth) /
-        scaledCharWidth,
-    );
-    const availableHeightChars = Math.floor(
-      (SCREEN_ROWS_COUNT * 8 -
-        top * scaledCharHeight -
-        bottom * scaledCharHeight) /
-        scaledCharHeight,
-    );
-
-    if (availableWidthChars <= 0 || availableHeightChars <= 0) {
+    if (width <= 0 || height <= 0) {
       return; // No space to write
     }
 
     let currentX = 0;
     let currentY = 0;
 
-    for (let i = 0; i < text.length && currentY < availableHeightChars; i++) {
+    for (let i = 0; i < text.length && currentY < height; i++) {
       let char = text[i];
 
       // Replace unknown characters with ~
@@ -263,20 +203,17 @@ export class TraktorScreen {
       }
 
       // Check if we need to wrap to next line
-      if (currentX >= availableWidthChars) {
+      if (currentX >= width) {
         currentX = 0;
         currentY++;
-        if (currentY >= availableHeightChars) {
+        if (currentY >= height) {
           break; // Out of vertical space
         }
       }
 
-      // Get font data for this character
-      const [topSection, bottomSection] = FONT_DATA[char];
-
       // Calculate pixel positions
-      const pixelX = left * scaledCharWidth + currentX * scaledCharWidth;
-      const pixelY = top * scaledCharHeight + currentY * scaledCharHeight;
+      const pixelX = x + currentX * scaledCharWidth;
+      const pixelY = y + currentY * scaledCharHeight;
 
       // Render scaled character to screen buffer
       for (let fontCol = 0; fontCol < FONT_CHAR_WIDTH; fontCol++) {
@@ -284,44 +221,24 @@ export class TraktorScreen {
           const screenCol = pixelX + fontCol * scale + scaleX;
           if (screenCol >= SCREEN_WIDTH) break;
 
-          // Process top half of character (first 8 rows)
-          for (let fontRow = 0; fontRow < 8; fontRow++) {
-            const fontPixel = (topSection[fontCol] >> fontRow) & 1;
+          // Process both rows of font data
+          for (let dataRowIndex = 0; dataRowIndex < 2; dataRowIndex++) {
+            const dataRow = FONT_DATA[char][dataRowIndex];
+            // Process top half of character (first 8 rows)
+            for (let fontRow = 0; fontRow < 8; fontRow++) {
+              let fontPixel = (dataRow[fontCol] >> fontRow) & 1;
 
-            for (let scaleY = 0; scaleY < scale; scaleY++) {
-              const screenRowPixel = pixelY + fontRow * scale + scaleY;
-              const screenRow = Math.floor(screenRowPixel / 8);
-              const pixelInRow = screenRowPixel % 8;
-
-              if (screenRow < SCREEN_ROWS_COUNT) {
-                if (fontPixel === 0) {
-                  // Set pixel (font data is inverted - 0 means draw)
-                  this.rows[screenRow][screenCol] &= ~(1 << pixelInRow);
-                } else {
-                  // Clear pixel
-                  this.rows[screenRow][screenCol] |= 1 << pixelInRow;
-                }
+              // Apply invert if requested
+              if (invert) {
+                fontPixel = fontPixel === 0 ? 1 : 0;
               }
-            }
-          }
 
-          // Process bottom half of character (second 8 rows)
-          for (let fontRow = 0; fontRow < 8; fontRow++) {
-            const fontPixel = (bottomSection[fontCol] >> fontRow) & 1;
+              for (let scaleY = 0; scaleY < scale; scaleY++) {
+                const screenY =
+                  pixelY + fontRow * scale + scaleY + dataRowIndex * 8 * scale;
 
-            for (let scaleY = 0; scaleY < scale; scaleY++) {
-              const screenRowPixel = pixelY + (8 + fontRow) * scale + scaleY;
-              const screenRow = Math.floor(screenRowPixel / 8);
-              const pixelInRow = screenRowPixel % 8;
-
-              if (screenRow < SCREEN_ROWS_COUNT) {
-                if (fontPixel === 0) {
-                  // Set pixel (font data is inverted - 0 means draw)
-                  this.rows[screenRow][screenCol] &= ~(1 << pixelInRow);
-                } else {
-                  // Clear pixel
-                  this.rows[screenRow][screenCol] |= 1 << pixelInRow;
-                }
+                // Set pixel using setPixel method (font data is inverted - 0 means draw)
+                this.setPixel(screenCol, screenY, fontPixel === 0);
               }
             }
           }
@@ -330,22 +247,209 @@ export class TraktorScreen {
       currentX++;
     }
   }
-}
 
-export class TraktorScreens {
-  public screens: TraktorScreen[];
+  /**
+   * Draws a box to the screen. If filled is true, all pixels within the box will be
+   * filled, otherwise only the border.
+   */
+  drawBox({
+    x,
+    y,
+    width,
+    height,
+    filled,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    filled: boolean;
+  }) {
+    if (width <= 0 || height <= 0) {
+      return; // Nothing to draw
+    }
 
-  constructor(count: number) {
-    this.screens = Array(count)
-      .fill(null)
-      .map((_, i) => new TraktorScreen(i));
+    if (filled) {
+      // Fill the entire box
+      for (let drawY = y; drawY < y + height; drawY++) {
+        for (let drawX = x; drawX < x + width; drawX++) {
+          this.setPixel(drawX, drawY, true);
+        }
+      }
+    } else {
+      // Draw only the border
+      // Top and bottom edges
+      for (let drawX = x; drawX < x + width; drawX++) {
+        this.setPixel(drawX, y, true); // Top edge
+        this.setPixel(drawX, y + height - 1, true); // Bottom edge
+      }
+
+      // Left and right edges
+      for (let drawY = y; drawY < y + height; drawY++) {
+        this.setPixel(x, drawY, true); // Left edge
+        this.setPixel(x + width - 1, drawY, true); // Right edge
+      }
+    }
   }
 
-  clearAll() {
-    this.screens.forEach((screen) => screen.clear());
+  drawEqGauge({
+    x,
+    y,
+    width,
+    height,
+    value,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    value: number;
+  }) {
+    if (width <= 0 || height <= 0) {
+      return; // Nothing to draw
+    }
+    const midY = y + Math.floor(height / 2);
+    const midX = x + Math.floor(width / 2);
+
+    // Draw a line across the middle
+    this.drawBox({
+      x,
+      y: midY,
+      width,
+      height: 2,
+      filled: true,
+    });
+
+    // Draw two dotted vertical lines
+    for (let drawY = y; drawY < y + height; drawY += 4) {
+      this.setPixel(midX - 2, drawY, true);
+      this.setPixel(midX + 2, drawY, true);
+    }
+
+    if (value > 0.5) {
+      // Draw a box coming up from the line
+      const barHeight = height * (value - 0.5);
+      this.drawBox({
+        x,
+        y: midY - barHeight,
+        width,
+        height: barHeight,
+        filled: true,
+      });
+    } else if (value < 0.5) {
+      // Draw a box coming down from the line
+      const barHeight = height * (0.5 - value);
+      this.drawBox({
+        x,
+        y: midY,
+        width,
+        height: barHeight,
+        filled: true,
+      });
+    }
   }
 
-  sendAll(isDebugging: boolean) {
-    this.screens.forEach((screen) => screen.send(isDebugging));
+  drawVertVolGauge({
+    x,
+    y,
+    width,
+    height,
+    value,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    value: number;
+  }) {
+    if (width <= 0 || height <= 0) {
+      return; // Nothing to draw
+    }
+
+    // Draw the outer border
+    this.drawBox({
+      x,
+      y,
+      width,
+      height,
+      filled: false,
+    });
+
+    // Calculate the inner area for the fill
+    const innerX = x + 1;
+    const innerY = y + 1;
+    const innerWidth = width - 2;
+    const innerHeight = height - 2;
+
+    if (innerWidth <= 0 || innerHeight <= 0) {
+      return; // No space for inner fill
+    }
+
+    // Calculate how much of the gauge should be filled based on value (0.0 to 1.0)
+    const clampedValue = Math.max(0, Math.min(1, value));
+    const fillHeight = Math.floor(innerHeight * clampedValue);
+
+    // Fill the gauge from bottom to top
+    if (fillHeight > 0) {
+      this.drawBox({
+        x: innerX,
+        y: innerY + innerHeight - fillHeight,
+        width: innerWidth,
+        height: fillHeight,
+        filled: true,
+      });
+    }
+  }
+
+  drawHorzVolGauge({
+    x,
+    y,
+    width,
+    height,
+    value,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    value: number;
+  }) {
+    if (width <= 0 || height <= 0) {
+      return; // Nothing to draw
+    }
+
+    // Draw the outer border
+    this.drawBox({
+      x,
+      y,
+      width,
+      height,
+      filled: false,
+    });
+
+    // Calculate the inner area for the fill
+    const innerX = x + 1;
+    const innerY = y + 1;
+    const innerWidth = width - 2;
+    const innerHeight = height - 2;
+
+    if (innerWidth <= 0 || innerHeight <= 0) {
+      return; // No space for inner fill
+    }
+
+    // Calculate how much of the gauge should be filled based on value (0.0 to 1.0)
+    const clampedValue = Math.max(0, Math.min(1, value));
+    const fillWidth = Math.floor(innerWidth * clampedValue);
+
+    // Fill the gauge from left to right
+    if (fillWidth > 0) {
+      this.drawBox({
+        x: innerX,
+        y: innerY,
+        width: fillWidth,
+        height: innerHeight,
+        filled: true,
+      });
+    }
   }
 }

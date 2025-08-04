@@ -4,7 +4,7 @@ import {
   dimColor,
   dimColorWhen,
 } from "./TraktorColors";
-import { TraktorScreen, TraktorScreens } from "./TraktorScreen";
+import { TraktorScreen } from "./TraktorScreen";
 import {
   Controller,
   ControllerButtonName,
@@ -12,6 +12,8 @@ import {
   ControllerGroup,
   ControllerKnobName,
 } from "./Z1MK2Controller";
+
+const SCREEN_RESET_MS = 800;
 
 type ButtonAction =
   | "shift"
@@ -166,7 +168,16 @@ class TraktorZ1MK2Class {
   isDebugging = false;
   config: TraktorZ1MK2Config = Object.assign({}, DEFAULT_Z1_MK2_CONFIG);
   lightsTimer?: engine.TimerID;
-  screens = new TraktorScreens(3);
+  screens: Record<ControllerGroup, TraktorScreen> = {
+    left: new TraktorScreen(0),
+    main: new TraktorScreen(1),
+    right: new TraktorScreen(2),
+  };
+  screenResetTimerIds: Record<ControllerGroup, engine.TimerID | undefined> = {
+    left: undefined,
+    main: undefined,
+    right: undefined,
+  };
 
   controller = new Controller();
   controllerState: ControllerState = {
@@ -203,14 +214,14 @@ class TraktorZ1MK2Class {
       this.syncLights();
     });
 
-    this.screens.screens[1].writeTextBig("Mixxx", 0, 0, 0, 0);
-    this.screens.sendAll(this.isDebugging);
+    this.syncScreens();
   }
 
   public incomingData(data: Uint8Array, _length: number): void {
     this.controller.processInput(data);
     this.handleInput();
     this.syncLights();
+    this.syncScreens();
   }
 
   public shutdown(): void {
@@ -225,8 +236,10 @@ class TraktorZ1MK2Class {
     this.controller.lights.send();
 
     // Clear all the screens
-    this.screens.clearAll();
-    this.screens.sendAll(this.isDebugging);
+    for (const screen of Object.values(this.screens)) {
+      screen.clear();
+      screen.send(this.isDebugging);
+    }
   }
 
   /** Toggles the value of an engine boolean. */
@@ -261,6 +274,15 @@ class TraktorZ1MK2Class {
     }
   }
 
+  /** Converts engine gain value back into a number between 0 and 1. */
+  private unscaleGain(value: number): number {
+    if (value < 1) {
+      return value / 2;
+    } else {
+      return (value - 1) / 6 + 0.5;
+    }
+  }
+
   /** Formats a numerical value for display on a screen */
   private formatValueForScreen(
     value: number,
@@ -269,7 +291,7 @@ class TraktorZ1MK2Class {
     switch (format) {
       case "signed": {
         const scaled = Math.round(Math.abs(value - 0.5) * 100);
-        return value < 0.5 ? `-${scaled}` : `${scaled}`;
+        return value > 0.5 || scaled === 0 ? `${scaled}` : `-${scaled}`;
       }
       case "unsigned":
         return `${Math.round(value * 100)}%`;
@@ -284,14 +306,16 @@ class TraktorZ1MK2Class {
     label,
     format,
     scale,
+    showValueScreen = false,
   }: {
     controllerGroup: ControllerGroup;
     controllerKnobName: ControllerKnobName;
     engineGroup: string;
     engineName: string;
-    label?: string;
+    label: string;
     format: "signed" | "unsigned";
     scale: "flat" | "gain" | "crossfader";
+    showValueScreen?: boolean;
   }) {
     const value = this.controller.getKnobIfChanged(
       controllerGroup,
@@ -310,12 +334,14 @@ class TraktorZ1MK2Class {
       );
     }
 
-    if (label) {
+    if (showValueScreen) {
       this.screenStatuses[controllerGroup] = {
         kind: "value",
         label,
         value: this.formatValueForScreen(value, format),
       };
+      this.scheduleScreenReset(controllerGroup, SCREEN_RESET_MS);
+      this.syncScreens();
     }
   }
 
@@ -333,6 +359,11 @@ class TraktorZ1MK2Class {
           ? "[Channel4]"
           : "[Channel2]";
     }
+  }
+
+  /** Gets the equalizer rack group which currently corresponds to a controller group. */
+  getEqRackGroup(group: ControllerGroup): string {
+    return `[EqualizerRack1_${this.getEngineGroup(group)}_Effect1]`;
   }
 
   /**
@@ -604,6 +635,7 @@ class TraktorZ1MK2Class {
       engineName: "gain",
       scale: "gain",
       format: "unsigned",
+      showValueScreen: true,
     });
     this.syncKnobToEngine({
       controllerGroup: "main",
@@ -613,6 +645,7 @@ class TraktorZ1MK2Class {
       engineName: "headMix",
       scale: "crossfader",
       format: "signed",
+      showValueScreen: true,
     });
     this.syncKnobToEngine({
       controllerGroup: "main",
@@ -622,6 +655,7 @@ class TraktorZ1MK2Class {
       engineName: "headGain",
       scale: "gain",
       format: "unsigned",
+      showValueScreen: true,
     });
     if (!this.config.disableCrossfader) {
       this.syncKnobToEngine({
@@ -638,11 +672,47 @@ class TraktorZ1MK2Class {
     // Handle changes for each side
     for (const controllerGroup of ["left" as const, "right" as const]) {
       const engineGroup = this.getEngineGroup(controllerGroup);
-      const eqRackGroup = `[EqualizerRack1_${engineGroup}_Effect1]`;
+      const eqRackGroup = this.getEqRackGroup(controllerGroup);
       const fxRackGroup = this.getFxRackGroup(controllerGroup);
 
       // Sync EQ or Stem knobs
       if (this.controllerState.stemToggle[controllerGroup]) {
+        this.syncKnobToEngine({
+          controllerGroup,
+          controllerKnobName: "gain",
+          label: "Drums",
+          engineGroup: `[Channel${engineGroup[8]}_Stem1]`,
+          engineName: "volume",
+          scale: "flat",
+          format: "unsigned",
+        });
+        this.syncKnobToEngine({
+          controllerGroup,
+          controllerKnobName: "hi",
+          label: "Bass",
+          engineGroup: `[Channel${engineGroup[8]}_Stem2]`,
+          engineName: "volume",
+          scale: "flat",
+          format: "unsigned",
+        });
+        this.syncKnobToEngine({
+          controllerGroup,
+          controllerKnobName: "mid",
+          label: "Other",
+          engineGroup: `[Channel${engineGroup[8]}_Stem3]`,
+          engineName: "volume",
+          scale: "flat",
+          format: "unsigned",
+        });
+        this.syncKnobToEngine({
+          controllerGroup,
+          controllerKnobName: "low",
+          label: "Vocal",
+          engineGroup: `[Channel${engineGroup[8]}_Stem4]`,
+          engineName: "volume",
+          scale: "flat",
+          format: "unsigned",
+        });
       } else {
         this.syncKnobToEngine({
           controllerGroup,
@@ -691,6 +761,7 @@ class TraktorZ1MK2Class {
         engineName: "super1",
         scale: "flat",
         format: "signed",
+        showValueScreen: true,
       });
       this.syncKnobToEngine({
         controllerGroup,
@@ -1015,6 +1086,266 @@ class TraktorZ1MK2Class {
       }
     }
     this.controller.lights.send();
+  }
+
+  private scheduleScreenReset(group: ControllerGroup, millis: number) {
+    const found = this.screenResetTimerIds[group];
+    if (found) {
+      engine.stopTimer(found);
+    }
+    this.screenResetTimerIds[group] = engine.beginTimer(
+      millis,
+      () => {
+        this.screenResetTimerIds[group] = undefined;
+        this.screenStatuses[group] = {
+          kind: "home",
+        };
+        this.syncScreens();
+      },
+      true,
+    );
+  }
+
+  private drawHomeScreen(screen: TraktorScreen) {
+    const decksToggleLeft = this.controllerState.decksToggle.left;
+    const decksToggleRight = this.controllerState.decksToggle.right;
+
+    screen.clear();
+    if (decksToggleLeft) {
+      screen.drawBox({
+        x: 0,
+        y: 32,
+        height: 32,
+        width: 32,
+        filled: true,
+      });
+    }
+    screen.writeText({
+      text: decksToggleLeft ? "C" : "A",
+      x: 6,
+      y: 32,
+      width: 1,
+      height: 1,
+      scale: 2,
+      invert: decksToggleLeft,
+    });
+    if (decksToggleRight) {
+      screen.drawBox({
+        x: 96,
+        y: 32,
+        height: 32,
+        width: 32,
+        filled: true,
+      });
+    }
+    screen.writeText({
+      text: decksToggleRight ? "D" : "B",
+      x: 101,
+      y: 32,
+      width: 1,
+      height: 1,
+      scale: 2,
+      invert: decksToggleRight,
+    });
+    const fx = engine.getValue(
+      "[QuickEffectRack1_[Channel1]]",
+      "loaded_chain_preset",
+    );
+    if (fx) {
+      screen.writeText({
+        text: `#${fx}`,
+        scale: 2,
+        x: 44,
+        y: 32,
+        width: 2,
+        height: 1,
+      });
+    }
+    const recStatus = engine.getValue("[Recording]", "status");
+    if (recStatus > 0) {
+      screen.writeText({
+        text: recStatus > 1 ? "Recording" : "Init Rec..",
+        scale: 1,
+        x: 0,
+        y: 0,
+        width: 12,
+        height: 1,
+      });
+    }
+  }
+
+  private drawEqScreen(screen: TraktorScreen, group: "left" | "right") {
+    const engineGroup = this.getEngineGroup(group);
+    const eqRackGroup = this.getEqRackGroup(group);
+    const volume = engine.getValue(this.getEngineGroup(group), "volume");
+    const gain = this.unscaleGain(engine.getValue(engineGroup, "pregain"));
+    const hi = this.unscaleGain(engine.getValue(eqRackGroup, "parameter3"));
+    const mid = this.unscaleGain(engine.getValue(eqRackGroup, "parameter2"));
+    const low = this.unscaleGain(engine.getValue(eqRackGroup, "parameter1"));
+
+    screen.clear();
+    screen.writeText({
+      text: Math.round(volume * 100).toString(),
+      scale: 2,
+      x: 0,
+      y: 32,
+      width: 5,
+      height: 1,
+    });
+    screen.drawEqGauge({
+      x: 65,
+      y: 4,
+      width: 14,
+      height: 57,
+      value: gain,
+    });
+    screen.drawEqGauge({
+      x: 81,
+      y: 4,
+      width: 14,
+      height: 57,
+      value: hi,
+    });
+    screen.drawEqGauge({
+      x: 97,
+      y: 4,
+      width: 14,
+      height: 57,
+      value: mid,
+    });
+    screen.drawEqGauge({
+      x: 113,
+      y: 4,
+      width: 14,
+      height: 57,
+      value: low,
+    });
+  }
+
+  private drawStemScreen(screen: TraktorScreen, group: "left" | "right") {
+    const engineGroup = this.getEngineGroup(group);
+    const volume = engine.getValue(this.getEngineGroup(group), "volume");
+    const drums = engine.getValue(`[Channel${engineGroup[8]}_Stem1]`, "volume");
+    const bass = engine.getValue(`[Channel${engineGroup[8]}_Stem2]`, "volume");
+    const other = engine.getValue(`[Channel${engineGroup[8]}_Stem3]`, "volume");
+    const vocal = engine.getValue(`[Channel${engineGroup[8]}_Stem4]`, "volume");
+    screen.clear();
+    screen.drawVertVolGauge({
+      x: 5,
+      y: 2,
+      width: 10,
+      height: 60,
+      value: volume,
+    });
+    screen.writeText({
+      text: "Drums",
+      scale: 1,
+      x: 20,
+      y: 0,
+      width: 5,
+      height: 1,
+    });
+    screen.drawHorzVolGauge({
+      x: 78,
+      y: 2,
+      width: 50,
+      height: 12,
+      value: drums,
+    });
+    screen.writeText({
+      text: "Bass",
+      scale: 1,
+      x: 20,
+      y: 16,
+      width: 5,
+      height: 1,
+    });
+    screen.drawHorzVolGauge({
+      x: 78,
+      y: 18,
+      width: 50,
+      height: 12,
+      value: bass,
+    });
+    screen.writeText({
+      text: "Other",
+      scale: 1,
+      x: 20,
+      y: 32,
+      width: 5,
+      height: 1,
+    });
+    screen.drawHorzVolGauge({
+      x: 78,
+      y: 34,
+      width: 50,
+      height: 12,
+      value: other,
+    });
+    screen.writeText({
+      text: "Vocal",
+      scale: 1,
+      x: 20,
+      y: 48,
+      width: 5,
+      height: 1,
+    });
+    screen.drawHorzVolGauge({
+      x: 78,
+      y: 50,
+      width: 50,
+      height: 12,
+      value: vocal,
+    });
+  }
+
+  private drawValueScreen(
+    screen: TraktorScreen,
+    data: Extract<ScreenStatus, { kind: "value" }>,
+  ) {
+    screen.clear();
+    screen.writeText({
+      x: 0,
+      y: 0,
+      scale: 2,
+      text: data.label,
+      width: 6,
+      height: 1,
+    });
+    screen.writeText({
+      x: 0,
+      y: 32,
+      scale: 2,
+      text: data.value,
+      width: 6,
+      height: 1,
+    });
+  }
+
+  /** Sync data to controller screens */
+  private syncScreens() {
+    for (const group of ["main" as const, "left" as const, "right" as const]) {
+      const screen = this.screens[group];
+      const status = this.screenStatuses[group];
+      switch (status.kind) {
+        case "value":
+          this.drawValueScreen(screen, status);
+          break;
+        case "softTakeover":
+          screen.clear();
+          break;
+        case "home":
+          if (group === "main") {
+            this.drawHomeScreen(screen);
+          } else if (this.controllerState.stemToggle[group]) {
+            this.drawStemScreen(screen, group);
+          } else {
+            this.drawEqScreen(this.screens[group], group);
+          }
+          break;
+      }
+      screen.send(this.isDebugging);
+    }
   }
 }
 
