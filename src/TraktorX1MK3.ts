@@ -1,4 +1,5 @@
-import { defaultedColor, dimColor, dimColorWhen } from "./TraktorColors";
+import { ButtonAction } from "./ButtonAction";
+import { defaultedColor, dimColorWhen } from "./TraktorColors";
 import { TraktorScreen } from "./TraktorScreen";
 import {
   Controller,
@@ -13,92 +14,36 @@ const SOFT_TAKEOVER_MARGIN = 0.05;
 const MIN_BEATLOOP = 0.03125;
 const MAX_BEATLOOP = 512;
 
-enum ButtonAction {
-  Disabled = "Disabled",
-  Inherit = "Inherit",
-  Shift = "Shift",
-  Super = "Super",
-  ToggleDecks = "ToggleDecks",
-  AssignDeckAC = "AssignDeckAC",
-  AssignDeckBD = "AssignDeckBD",
-  AssignDeckA = "AssignDeckA",
-  AssignDeckB = "AssignDeckB",
-  AssignDeckC = "AssignDeckC",
-  AssignDeckD = "AssignDeckD",
-  ToggleFx1 = "ToggleFx1",
-  ToggleFx2 = "ToggleFx2",
-  ToggleFx3 = "ToggleFx3",
-  LoadTrack = "LoadTrack",
-  ToggleLoop = "ToggleLoop",
-  ToggleLoop4 = "ToggleLoop4",
-  LoopDown = "LoopDown",
-  LoopUp = "LoopUp",
-  Hotcue1 = "Hotcue1",
-  Hotcue2 = "Hotcue2",
-  Hotcue3 = "Hotcue3",
-  Hotcue4 = "Hotcue4",
-  Hotcue5 = "Hotcue5",
-  Hotcue6 = "Hotcue6",
-  Hotcue7 = "Hotcue7",
-  Hotcue8 = "Hotcue8",
-  ClearHotcue1 = "ClearHotcue1",
-  ClearHotcue2 = "ClearHotcue2",
-  ClearHotcue3 = "ClearHotcue3",
-  ClearHotcue4 = "ClearHotcue4",
-  ClearHotcue5 = "ClearHotcue5",
-  ClearHotcue6 = "ClearHotcue6",
-  ClearHotcue7 = "ClearHotcue7",
-  ClearHotcue8 = "ClearHotcue8",
-  BeatjumpLeft1 = "BeatjumpLeft1",
-  BeatjumpLeft2 = "BeatjumpLeft2",
-  BeatjumpLeft4 = "BeatjumpLeft4",
-  BeatjumpLeft8 = "BeatjumpLeft8",
-  BeatjumpLeft16 = "BeatjumpLeft16",
-  BeatjumpLeft32 = "BeatjumpLeft32",
-  BeatjumpLeft64 = "BeatjumpLeft64",
-  BeatjumpRight1 = "BeatjumpRight1",
-  BeatjumpRight2 = "BeatjumpRight2",
-  BeatjumpRight4 = "BeatjumpRight4",
-  BeatjumpRight8 = "BeatjumpRight8",
-  BeatjumpRight16 = "BeatjumpRight16",
-  BeatjumpRight32 = "BeatjumpRight32",
-  BeatjumpRight64 = "BeatjumpRight64",
-  BeatjumpLeftByLoop = "BeatjumpLeftByLoop",
-  BeatjumpRightByLoop = "BeatjumpRightByLoop",
-  Cue = "Cue",
-  Rev = "Rev",
-  Play = "Play",
-  Sync = "Sync",
-  SkipToStart = "SkipToStart",
-}
-
 type ButtonAssignment = {
   push: ButtonAction;
   shiftPush: ButtonAction;
   superPush: ButtonAction;
+  superShiftPush: ButtonAction;
 };
 
 type TraktorX1MK3Config = {
-  top: ButtonAssignment;
-  assignLeft: ButtonAssignment;
-  assignRight: ButtonAssignment;
-  fxToggle1: ButtonAssignment;
-  fxToggle2: ButtonAssignment;
-  fxToggle3: ButtonAssignment;
-  fxToggle4: ButtonAssignment;
-  browse: ButtonAssignment;
-  loop: ButtonAssignment;
-  shift: ButtonAssignment;
-  hotcue1: ButtonAssignment;
-  hotcue2: ButtonAssignment;
-  hotcue3: ButtonAssignment;
-  hotcue4: ButtonAssignment;
-  nudgeLeft: ButtonAssignment;
-  nudgeRight: ButtonAssignment;
-  cue: ButtonAssignment;
-  rev: ButtonAssignment;
-  play: ButtonAssignment;
-  sync: ButtonAssignment;
+  buttonAssignments: {
+    top: ButtonAssignment;
+    assignLeft: ButtonAssignment;
+    assignRight: ButtonAssignment;
+    fxToggle1: ButtonAssignment;
+    fxToggle2: ButtonAssignment;
+    fxToggle3: ButtonAssignment;
+    fxToggle4: ButtonAssignment;
+    browse: ButtonAssignment;
+    loop: ButtonAssignment;
+    shift: ButtonAssignment;
+    hotcue1: ButtonAssignment;
+    hotcue2: ButtonAssignment;
+    hotcue3: ButtonAssignment;
+    hotcue4: ButtonAssignment;
+    nudgeLeft: ButtonAssignment;
+    nudgeRight: ButtonAssignment;
+    cue: ButtonAssignment;
+    rev: ButtonAssignment;
+    play: ButtonAssignment;
+    sync: ButtonAssignment;
+  };
 
   colorTheme: string;
   colorBottomLedsDefault: string;
@@ -130,54 +75,57 @@ const assignment = ({
     push,
     shiftPush,
     superPush,
+    superShiftPush: ButtonAction.Inherit,
   };
 };
 
 const DEFAULT_X1_MK3_CONFIG: TraktorX1MK3Config = {
-  top: assignment({ push: ButtonAction.ToggleDecks }),
-  assignLeft: assignment({ push: ButtonAction.AssignDeckAC }),
-  assignRight: assignment({ push: ButtonAction.AssignDeckBD }),
-  fxToggle1: assignment({ push: ButtonAction.Disabled }),
-  fxToggle2: assignment({ push: ButtonAction.ToggleFx1 }),
-  fxToggle3: assignment({ push: ButtonAction.ToggleFx2 }),
-  fxToggle4: assignment({ push: ButtonAction.ToggleFx3 }),
-  browse: assignment({ push: ButtonAction.LoadTrack }),
-  loop: assignment({ push: ButtonAction.ToggleLoop }),
-  shift: assignment({ push: ButtonAction.Shift }),
-  hotcue1: assignment({
-    push: ButtonAction.Hotcue1,
-    shiftPush: ButtonAction.ClearHotcue1,
-  }),
-  hotcue2: assignment({
-    push: ButtonAction.Hotcue2,
-    shiftPush: ButtonAction.ClearHotcue2,
-  }),
-  hotcue3: assignment({
-    push: ButtonAction.Hotcue3,
-    shiftPush: ButtonAction.ClearHotcue3,
-  }),
-  hotcue4: assignment({
-    push: ButtonAction.Hotcue4,
-    shiftPush: ButtonAction.ClearHotcue4,
-  }),
-  nudgeLeft: assignment({
-    push: ButtonAction.BeatjumpLeft1,
-  }),
-  nudgeRight: assignment({
-    push: ButtonAction.BeatjumpRight1,
-  }),
-  cue: assignment({
-    push: ButtonAction.Cue,
-  }),
-  rev: assignment({
-    push: ButtonAction.Rev,
-  }),
-  play: assignment({
-    push: ButtonAction.Play,
-  }),
-  sync: assignment({
-    push: ButtonAction.Sync,
-  }),
+  buttonAssignments: {
+    top: assignment({ push: ButtonAction.ToggleDecks }),
+    assignLeft: assignment({ push: ButtonAction.AssignDeckAC }),
+    assignRight: assignment({ push: ButtonAction.AssignDeckBD }),
+    fxToggle1: assignment({ push: ButtonAction.Disabled }),
+    fxToggle2: assignment({ push: ButtonAction.ToggleFx1 }),
+    fxToggle3: assignment({ push: ButtonAction.ToggleFx2 }),
+    fxToggle4: assignment({ push: ButtonAction.ToggleFx3 }),
+    browse: assignment({ push: ButtonAction.LoadTrack }),
+    loop: assignment({ push: ButtonAction.ToggleLoop }),
+    shift: assignment({ push: ButtonAction.Shift }),
+    hotcue1: assignment({
+      push: ButtonAction.Hotcue1,
+      shiftPush: ButtonAction.ClearHotcue1,
+    }),
+    hotcue2: assignment({
+      push: ButtonAction.Hotcue2,
+      shiftPush: ButtonAction.ClearHotcue2,
+    }),
+    hotcue3: assignment({
+      push: ButtonAction.Hotcue3,
+      shiftPush: ButtonAction.ClearHotcue3,
+    }),
+    hotcue4: assignment({
+      push: ButtonAction.Hotcue4,
+      shiftPush: ButtonAction.ClearHotcue4,
+    }),
+    nudgeLeft: assignment({
+      push: ButtonAction.BeatjumpLeft1,
+    }),
+    nudgeRight: assignment({
+      push: ButtonAction.BeatjumpRight1,
+    }),
+    cue: assignment({
+      push: ButtonAction.Cue,
+    }),
+    rev: assignment({
+      push: ButtonAction.Rev,
+    }),
+    play: assignment({
+      push: ButtonAction.Play,
+    }),
+    sync: assignment({
+      push: ButtonAction.Sync,
+    }),
+  },
 
   colorTheme: "blue",
   colorBottomLedsDefault: "default",
@@ -364,8 +312,35 @@ class TraktorX1MK3Class {
     }
 
     for (const key in this.config) {
-      (this.config as Record<string, unknown>)[key] =
-        engine.getSetting(key) ?? (this.config as Record<string, unknown>)[key];
+      if (key !== "buttonAssignments") {
+        (this.config as Record<string, unknown>)[key] =
+          engine.getSetting(key) ??
+          (this.config as Record<string, unknown>)[key];
+      }
+    }
+
+    for (const key in this.config.buttonAssignments) {
+      const assignment =
+        this.config.buttonAssignments[
+          key as keyof TraktorX1MK3Config["buttonAssignments"]
+        ];
+      this.config.buttonAssignments[
+        key as keyof TraktorX1MK3Config["buttonAssignments"]
+      ] = {
+        push:
+          (engine.getSetting(`${key}Push`) as ButtonAction | undefined) ??
+          assignment.push,
+        shiftPush:
+          (engine.getSetting(`${key}ShiftPush`) as ButtonAction | undefined) ??
+          assignment.shiftPush,
+        superPush:
+          (engine.getSetting(`${key}SuperPush`) as ButtonAction | undefined) ??
+          assignment.superPush,
+        superShiftPush:
+          (engine.getSetting(`${key}SuperShiftPush`) as
+            | ButtonAction
+            | undefined) ?? assignment.superShiftPush,
+      };
     }
 
     this.syncLights();
@@ -1093,12 +1068,12 @@ class TraktorX1MK3Class {
     this.handleButton({
       group: "main",
       name: "top",
-      assignment: this.config.top,
+      assignment: this.config.buttonAssignments.top,
     });
     this.handleButton({
       group: "main",
       name: "shift",
-      assignment: this.config.shift,
+      assignment: this.config.buttonAssignments.shift,
     });
 
     // Handle side group buttons
@@ -1106,92 +1081,92 @@ class TraktorX1MK3Class {
       this.handleButton({
         group,
         name: "assignLeft",
-        assignment: this.config.assignLeft,
+        assignment: this.config.buttonAssignments.assignLeft,
       });
       this.handleButton({
         group,
         name: "assignRight",
-        assignment: this.config.assignRight,
+        assignment: this.config.buttonAssignments.assignRight,
       });
       this.handleButton({
         group,
         name: "fxToggle1",
-        assignment: this.config.fxToggle1,
+        assignment: this.config.buttonAssignments.fxToggle1,
       });
       this.handleButton({
         group,
         name: "fxToggle2",
-        assignment: this.config.fxToggle2,
+        assignment: this.config.buttonAssignments.fxToggle2,
       });
       this.handleButton({
         group,
         name: "fxToggle3",
-        assignment: this.config.fxToggle3,
+        assignment: this.config.buttonAssignments.fxToggle3,
       });
       this.handleButton({
         group,
         name: "fxToggle4",
-        assignment: this.config.fxToggle4,
+        assignment: this.config.buttonAssignments.fxToggle4,
       });
       this.handleButton({
         group,
         name: "browse",
-        assignment: this.config.browse,
+        assignment: this.config.buttonAssignments.browse,
       });
       this.handleButton({
         group,
         name: "loop",
-        assignment: this.config.loop,
+        assignment: this.config.buttonAssignments.loop,
       });
       this.handleButton({
         group,
         name: "hotcue1",
-        assignment: this.config.hotcue1,
+        assignment: this.config.buttonAssignments.hotcue1,
       });
       this.handleButton({
         group,
         name: "hotcue2",
-        assignment: this.config.hotcue2,
+        assignment: this.config.buttonAssignments.hotcue2,
       });
       this.handleButton({
         group,
         name: "hotcue3",
-        assignment: this.config.hotcue3,
+        assignment: this.config.buttonAssignments.hotcue3,
       });
       this.handleButton({
         group,
         name: "hotcue4",
-        assignment: this.config.hotcue4,
+        assignment: this.config.buttonAssignments.hotcue4,
       });
       this.handleButton({
         group,
         name: "nudgeLeft",
-        assignment: this.config.nudgeLeft,
+        assignment: this.config.buttonAssignments.nudgeLeft,
       });
       this.handleButton({
         group,
         name: "nudgeRight",
-        assignment: this.config.nudgeRight,
+        assignment: this.config.buttonAssignments.nudgeRight,
       });
       this.handleButton({
         group,
         name: "cue",
-        assignment: this.config.cue,
+        assignment: this.config.buttonAssignments.cue,
       });
       this.handleButton({
         group,
         name: "rev",
-        assignment: this.config.rev,
+        assignment: this.config.buttonAssignments.rev,
       });
       this.handleButton({
         group,
         name: "play",
-        assignment: this.config.play,
+        assignment: this.config.buttonAssignments.play,
       });
       this.handleButton({
         group,
         name: "sync",
-        assignment: this.config.sync,
+        assignment: this.config.buttonAssignments.sync,
       });
     }
   }
@@ -1249,7 +1224,7 @@ class TraktorX1MK3Class {
     buttonName: ControllerButtonName;
     lightName: ControllerColoredLightName;
   }) {
-    const assignment = this.config[buttonName];
+    const assignment = this.config.buttonAssignments[buttonName];
     const action = this.getButtonAction(assignment);
     const defaultColor = defaultedColor(
       defaultedColor(this.config.actionColors[action], this.config.colorTheme),

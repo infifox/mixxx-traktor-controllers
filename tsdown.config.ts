@@ -1,14 +1,22 @@
 import { defineConfig } from "tsdown";
 
-export default defineConfig({
-  entry: {
-    "Traktor-Z1-MK2": "./src/TraktorZ1MK2.ts",
-    "Traktor-X1-MK3": "./src/TraktorX1MK3.ts",
+export default defineConfig([
+  {
+    entry: ["./src/TraktorZ1MK2.ts"],
+    format: "esm",
+    target: "es2020",
+    outputOptions: {
+      dir: undefined,
+      file: "dist/Traktor-Z1-MK2.script.js",
+    },
   },
-  format: "esm",
-  target: "es2020",
-  outDir: "dist",
-  outputOptions: {
-    entryFileNames: "[name].script.js",
+  {
+    entry: ["./src/TraktorX1MK3.ts"],
+    format: "esm",
+    target: "es2020",
+    outputOptions: {
+      dir: undefined,
+      file: "dist/Traktor-X1-MK3.script.js",
+    },
   },
-});
+]);

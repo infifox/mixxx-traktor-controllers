@@ -15,6 +15,7 @@
   "scripts": {
     "build": "tsdown && cp res/*.xml dist/",
     "copy": "cp dist/* ~/.mixxx/controllers/",
-    "convert-font": "node ./src/convert-font.ts"
+    "convert-font": "node ./src/convert-font.ts",
+    "gen-xml": "bun scripts/buildHid.ts > res/Traktor\\ X1\\ MK3.hid.xml"
   }
 }

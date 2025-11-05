@@ -172,6 +172,8 @@ class InputMessage {
         switch (name) {
           case "top":
             return !!(this.data[4] & 0x80);
+          case "shift":
+            return !!(this.data[1] & 0x01);
           default:
             throw new Error(`Invalid main button -- ${name}`);
         }
@@ -361,9 +363,6 @@ class ControllerLights {
           case "fxToggle4":
             this.data[23] = colorCode(color);
             return;
-          case "shift":
-            this.data[0] = colorCode(color);
-            return;
           case "hotcue1":
             this.data[19] = colorCode(color);
             return;
@@ -485,6 +484,14 @@ class ControllerLights {
             return;
           default:
             throw new Error(`Invalid right light -- ${name}`);
+        }
+      case "main":
+        switch (name) {
+          case "shift":
+            this.data[0] = colorCode(color);
+            return;
+          default:
+            throw new Error(`Invalid main light -- ${name}`);
         }
       default:
         throw new Error(`Invalid group -- ${group}`);
