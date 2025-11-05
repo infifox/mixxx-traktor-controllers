@@ -21,7 +21,7 @@ export type ControllerGroup = "left" | "right" | "main";
  * - *fxToggle2* - FX toggle button 2
  * - *fxToggle3* - FX toggle button 3
  * - *fxToggle4* - FX toggle button 4
- * - *load* - Press of the browse encoder
+ * - *browse* - Press of the browse encoder
  * - *loop* - Press of the loop encoder
  * - *hotcue1* - Hotcue button 1
  * - *hotcue2* - Hotcue button 2
@@ -42,8 +42,9 @@ export type ControllerButtonName =
   | "fxToggle2"
   | "fxToggle3"
   | "fxToggle4"
-  | "load"
+  | "browse"
   | "loop"
+  | "shift"
   | "hotcue1"
   | "hotcue2"
   | "hotcue3"
@@ -84,6 +85,7 @@ export type ControllerEncoderName = "browse" | "loop";
  * - *fxToggle2* - FX toggle button 2
  * - *fxToggle3* - FX toggle button 3
  * - *fxToggle4* - FX toggle button 4
+ * - *shift* - Shift button
  * - *hotcue1* - Hotcue button 1
  * - *hotcue2* - Hotcue button 2
  * - *hotcue3* - Hotcue button 3
@@ -108,6 +110,7 @@ export type ControllerColoredLightName =
   | "fxToggle2"
   | "fxToggle3"
   | "fxToggle4"
+  | "shift"
   | "hotcue1"
   | "hotcue2"
   | "hotcue3"
@@ -186,7 +189,7 @@ class InputMessage {
             return !!(this.data[3] & 0x80);
           case "fxToggle4":
             return !!(this.data[3] & 0x20);
-          case "load":
+          case "browse":
             return !!(this.data[5] & 0x10);
           case "loop":
             return !!(this.data[5] & 0x04);
@@ -227,7 +230,7 @@ class InputMessage {
             return !!(this.data[4] & 0x01);
           case "fxToggle4":
             return !!(this.data[3] & 0x40);
-          case "load":
+          case "browse":
             return !!(this.data[5] & 0x20);
           case "loop":
             return !!(this.data[5] & 0x08);
@@ -291,6 +294,32 @@ class InputMessage {
 
     throw new Error(`Invalid knob -- ${group}:${name}`);
   }
+
+  /** Gets the current value of an encoder, from 0-15 */
+  getEncoderValue(group: ControllerGroup, name: ControllerEncoderName): number {
+    switch (group) {
+      case "left":
+        switch (name) {
+          case "browse":
+            return this.data[8] & 0x0f;
+          case "loop":
+            return this.data[7] & 0x0f;
+          default:
+            throw new Error(`Invalid left encoder -- ${name}`);
+        }
+      case "right":
+        switch (name) {
+          case "browse":
+            return (this.data[8] >> 4) & 0x0f;
+          case "loop":
+            return (this.data[7] >> 4) & 0x0f;
+          default:
+            throw new Error(`Invalid right encoder -- ${name}`);
+        }
+    }
+
+    throw new Error(`Invalid encoder -- ${group}:${name}`);
+  }
 }
 
 /** Abstraction to update lights on for the controller. */
@@ -331,6 +360,9 @@ class ControllerLights {
             return;
           case "fxToggle4":
             this.data[23] = colorCode(color);
+            return;
+          case "shift":
+            this.data[0] = colorCode(color);
             return;
           case "hotcue1":
             this.data[19] = colorCode(color);
@@ -517,7 +549,7 @@ export class Controller {
   }
 
   /**
-   * Gets the value for a knob if it was just changed, otehrwise returns
+   * Gets the value for a knob if it was just changed, otherwise returns
    * undefined.
    */
   getKnobIfChanged(
@@ -534,6 +566,32 @@ export class Controller {
       return newValue;
     } else {
       return undefined;
+    }
+  }
+
+  /**
+   * Gets the amount an encoder just changed by.
+   */
+  getEncoderChange(
+    group: ControllerGroup,
+    name: ControllerEncoderName,
+  ): number {
+    if (this.previousMessage.isNull()) {
+      return 0;
+    }
+
+    const oldValue = this.previousMessage.getEncoderValue(group, name);
+    const newValue = this.currentMessage.getEncoderValue(group, name);
+
+    // Detect wrap-around
+    if (Math.abs(oldValue - newValue) > 8) {
+      if (oldValue < newValue) {
+        return newValue - oldValue - 16;
+      } else {
+        return newValue - oldValue + 16;
+      }
+    } else {
+      return newValue - oldValue;
     }
   }
 }
