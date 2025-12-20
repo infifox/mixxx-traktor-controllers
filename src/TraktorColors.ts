@@ -76,8 +76,10 @@ const DIM_COLORS: Record<string, string> = {
   white: "black",
 };
 
-export const defaultedColor = (color: string, defaultColor: string): string =>
-  color === "default" ? defaultColor : color;
+export const defaultedColor = (
+  color: string | undefined,
+  defaultColor: string,
+): string => (color === "default" || !color ? defaultColor : color);
 
 export const dimColor = (color: string): string => DIM_COLORS[color] ?? color;
 
@@ -85,3 +87,60 @@ export const dimColorWhen = (color: string, condition: boolean): string =>
   condition ? dimColor(color) : color;
 
 export const colorCode = (color: string): number => COLOR_CODES[color] ?? 0;
+
+export const COLOR_NAMES = [
+  "black",
+  "redDim",
+  "red",
+  "darkOrangeDim",
+  "darkOrange",
+  "lightOrangeDim",
+  "lightOrange",
+  "warmYellowDim",
+  "warmYellow",
+  "yellowDim",
+  "yellow",
+  "limeDim",
+  "lime",
+  "greenDim",
+  "green",
+  "mintDim",
+  "mint",
+  "cyanDim",
+  "cyan",
+  "turquoiseDim",
+  "turquoise",
+  "blueDim",
+  "blue",
+  "plumDim",
+  "plum",
+  "violetDim",
+  "violet",
+  "purpleDim",
+  "purple",
+  "magentaDim",
+  "magenta",
+  "fuschiaDark",
+  "fuschia",
+  "white",
+];
+
+export const COLOR_MAPPER = new ColorMapper({
+  0x000000: 0, // Black
+  0xff0000: 2, // Red
+  0xff8000: 4, // Dark Orange
+  0xffa000: 6, // Light Orange
+  0xffc000: 8, // Warm Yellow
+  0xffff00: 10, // Yellow
+  0x80ff00: 12, // Lime
+  0x00ff00: 14, // Green
+  0x00ff80: 16, // Mint
+  0x00ffff: 18, // Cyan
+  0x0080ff: 20, // Turquoise
+  0x0000ff: 22, // Blue
+  0x8000ff: 24, // Plum
+  0xa000ff: 26, // Violet
+  0xc000ff: 28, // Purple
+  0xff00ff: 30, // Magenta
+  0xff0080: 32, // Fuschia
+});

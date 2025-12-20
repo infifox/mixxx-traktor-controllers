@@ -326,8 +326,8 @@ class InputMessage {
 
 /** Abstraction to update lights on for the controller. */
 class ControllerLights {
-  oldData: Uint8Array = new Uint8Array(50);
-  data: Uint8Array = new Uint8Array(50);
+  oldData: Uint8Array = new Uint8Array(49);
+  data: Uint8Array = new Uint8Array(49);
 
   /** Clears all light data, turning off all the lights. */
   clear() {

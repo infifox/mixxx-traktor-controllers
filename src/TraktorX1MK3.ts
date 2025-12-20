@@ -1,5 +1,18 @@
-import { ButtonAction } from "./ButtonAction";
-import { defaultedColor, dimColorWhen } from "./TraktorColors";
+import {
+  applyTemplate,
+  BUTTON_ACTIONS,
+  ButtonAction,
+  ButtonActionName,
+  loadButtonActionFromSetting,
+  TemplateArgs,
+} from "./ButtonAction";
+import {
+  COLOR_MAPPER,
+  COLOR_NAMES,
+  defaultedColor,
+  dimColor,
+  dimColorWhen,
+} from "./TraktorColors";
 import { TraktorScreen } from "./TraktorScreen";
 import {
   Controller,
@@ -11,14 +24,12 @@ import {
 
 const SCREEN_RESET_MS = 800;
 const SOFT_TAKEOVER_MARGIN = 0.05;
-const MIN_BEATLOOP = 0.03125;
-const MAX_BEATLOOP = 512;
 
 type ButtonAssignment = {
   push: ButtonAction;
-  shiftPush: ButtonAction;
-  superPush: ButtonAction;
-  superShiftPush: ButtonAction;
+  shiftPush?: ButtonAction;
+  superPush?: ButtonAction;
+  superShiftPush?: ButtonAction;
 };
 
 type TraktorX1MK3Config = {
@@ -55,7 +66,7 @@ type TraktorX1MK3Config = {
   colorBottomLeds4: string;
   colorBottomLeds5: string;
   colorBottomLeds6: string;
-  actionColors: Record<ButtonAction, string>;
+  actionColors: Record<string, string>;
 
   blinkBottomLeds: boolean;
   endWarning: boolean;
@@ -64,8 +75,8 @@ type TraktorX1MK3Config = {
 
 const assignment = ({
   push,
-  shiftPush = ButtonAction.Inherit,
-  superPush = ButtonAction.Inherit,
+  shiftPush,
+  superPush,
 }: {
   push: ButtonAction;
   shiftPush?: ButtonAction;
@@ -75,55 +86,54 @@ const assignment = ({
     push,
     shiftPush,
     superPush,
-    superShiftPush: ButtonAction.Inherit,
   };
 };
 
 const DEFAULT_X1_MK3_CONFIG: TraktorX1MK3Config = {
   buttonAssignments: {
-    top: assignment({ push: ButtonAction.ToggleDecks }),
-    assignLeft: assignment({ push: ButtonAction.AssignDeckAC }),
-    assignRight: assignment({ push: ButtonAction.AssignDeckBD }),
-    fxToggle1: assignment({ push: ButtonAction.Disabled }),
-    fxToggle2: assignment({ push: ButtonAction.ToggleFx1 }),
-    fxToggle3: assignment({ push: ButtonAction.ToggleFx2 }),
-    fxToggle4: assignment({ push: ButtonAction.ToggleFx3 }),
-    browse: assignment({ push: ButtonAction.LoadTrack }),
-    loop: assignment({ push: ButtonAction.ToggleLoop }),
-    shift: assignment({ push: ButtonAction.Shift }),
+    top: assignment({ push: BUTTON_ACTIONS.toggleDecks }),
+    assignLeft: assignment({ push: BUTTON_ACTIONS.assignDeckAC }),
+    assignRight: assignment({ push: BUTTON_ACTIONS.assignDeckBD }),
+    fxToggle1: assignment({ push: BUTTON_ACTIONS.disabled }),
+    fxToggle2: assignment({ push: BUTTON_ACTIONS.toggleFx1 }),
+    fxToggle3: assignment({ push: BUTTON_ACTIONS.toggleFx2 }),
+    fxToggle4: assignment({ push: BUTTON_ACTIONS.toggleFx3 }),
+    browse: assignment({ push: BUTTON_ACTIONS.loadTrack }),
+    loop: assignment({ push: BUTTON_ACTIONS.toggleLoop }),
+    shift: assignment({ push: BUTTON_ACTIONS.shift }),
     hotcue1: assignment({
-      push: ButtonAction.Hotcue1,
-      shiftPush: ButtonAction.ClearHotcue1,
+      push: BUTTON_ACTIONS.hotcue1,
+      shiftPush: BUTTON_ACTIONS.clearHotcue1,
     }),
     hotcue2: assignment({
-      push: ButtonAction.Hotcue2,
-      shiftPush: ButtonAction.ClearHotcue2,
+      push: BUTTON_ACTIONS.hotcue2,
+      shiftPush: BUTTON_ACTIONS.clearHotcue2,
     }),
     hotcue3: assignment({
-      push: ButtonAction.Hotcue3,
-      shiftPush: ButtonAction.ClearHotcue3,
+      push: BUTTON_ACTIONS.hotcue3,
+      shiftPush: BUTTON_ACTIONS.clearHotcue3,
     }),
     hotcue4: assignment({
-      push: ButtonAction.Hotcue4,
-      shiftPush: ButtonAction.ClearHotcue4,
+      push: BUTTON_ACTIONS.hotcue4,
+      shiftPush: BUTTON_ACTIONS.clearHotcue4,
     }),
     nudgeLeft: assignment({
-      push: ButtonAction.BeatjumpLeft1,
+      push: BUTTON_ACTIONS.beatjumpForward1,
     }),
     nudgeRight: assignment({
-      push: ButtonAction.BeatjumpRight1,
+      push: BUTTON_ACTIONS.beatjumpBackward1,
     }),
     cue: assignment({
-      push: ButtonAction.Cue,
+      push: BUTTON_ACTIONS.cue,
     }),
     rev: assignment({
-      push: ButtonAction.Rev,
+      push: BUTTON_ACTIONS.rev,
     }),
     play: assignment({
-      push: ButtonAction.Play,
+      push: BUTTON_ACTIONS.play,
     }),
     sync: assignment({
-      push: ButtonAction.Sync,
+      push: BUTTON_ACTIONS.sync,
     }),
   },
 
@@ -328,18 +338,22 @@ class TraktorX1MK3Class {
         key as keyof TraktorX1MK3Config["buttonAssignments"]
       ] = {
         push:
-          (engine.getSetting(`${key}Push`) as ButtonAction | undefined) ??
-          assignment.push,
-        shiftPush:
-          (engine.getSetting(`${key}ShiftPush`) as ButtonAction | undefined) ??
+          loadButtonActionFromSetting(
+            engine.getSetting(`${key}Push`),
+            assignment.push,
+          ) ?? BUTTON_ACTIONS.disabled,
+        shiftPush: loadButtonActionFromSetting(
+          engine.getSetting(`${key}ShiftPush`),
           assignment.shiftPush,
-        superPush:
-          (engine.getSetting(`${key}SuperPush`) as ButtonAction | undefined) ??
+        ),
+        superPush: loadButtonActionFromSetting(
+          engine.getSetting(`${key}SuperPush`),
           assignment.superPush,
-        superShiftPush:
-          (engine.getSetting(`${key}SuperShiftPush`) as
-            | ButtonAction
-            | undefined) ?? assignment.superShiftPush,
+        ),
+        superShiftPush: loadButtonActionFromSetting(
+          engine.getSetting(`${key}SuperShiftPush`),
+          assignment.superShiftPush,
+        ),
       };
     }
 
@@ -569,426 +583,79 @@ class TraktorX1MK3Class {
   }
 
   private startAction({
-    group,
     action,
+    args,
   }: {
-    group: ControllerGroup;
     action: ButtonAction;
+    args: TemplateArgs;
   }) {
-    switch (group) {
-      case "main":
-        switch (action) {
-          case ButtonAction.Shift:
+    switch (action.kind) {
+      case "disabled":
+        break;
+      case "modifier":
+        switch (action.modifier) {
+          case "shift":
             this.controllerState.shift = true;
             break;
-          case ButtonAction.Super:
+          case "super":
             this.controllerState.super = true;
             break;
-          case ButtonAction.ToggleDecks: {
-            const newValue =
-              !this.controllerState.decksToggle.left &&
-              !this.controllerState.decksToggle.right;
-            this.controllerState.decksToggle.left = newValue;
-            this.controllerState.decksToggle.right = newValue;
-            break;
-          }
-          case ButtonAction.Disabled:
-            break;
-          default:
-            if (this.isDebugging) {
-              console.warn(
-                `No button down action for ${group} group: ${action}`,
-              );
-            }
         }
         break;
-      case "left":
-      case "right":
-        switch (action) {
-          case ButtonAction.AssignDeckAC:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              this.controllerState.decksToggle.left
-                ? "group_3_enable"
-                : "group_1_enable",
-            );
-            break;
-          case ButtonAction.AssignDeckBD:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              this.controllerState.decksToggle.right
-                ? "group_4_enable"
-                : "group_2_enable",
-            );
-            break;
-          case ButtonAction.AssignDeckA:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              "group_1_enable",
-            );
-            break;
-          case ButtonAction.AssignDeckB:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              "group_2_enable",
-            );
-            break;
-          case ButtonAction.AssignDeckC:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              "group_3_enable",
-            );
-            break;
-          case ButtonAction.AssignDeckD:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}`,
-              "group_4_enable",
-            );
-            break;
-          case ButtonAction.ToggleFx1:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}_Effect1]`,
-              "enabled",
-            );
-            break;
-          case ButtonAction.ToggleFx2:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}_Effect2]`,
-              "enabled",
-            );
-            break;
-          case ButtonAction.ToggleFx3:
-            this.toggleEngineBoolean(
-              `[EffectRack1_EffectUnit${group === "left" ? "1" : "2"}_Effect3]`,
-              "enabled",
-            );
-            break;
-          case ButtonAction.LoadTrack:
-            engine.setValue(this.getEngineGroup(group), "LoadSelectedTrack", 1);
-            break;
-          case ButtonAction.ToggleLoop: {
-            const loop = engine.getValue(
-              this.getEngineGroup(group),
-              "beatloop_size",
-            );
-            this.toggleEngineBoolean(
-              this.getEngineGroup(group),
-              `beatloop_${loop}_enabled`,
-            );
-            break;
-          }
-          case ButtonAction.ToggleLoop4: {
-            this.toggleEngineBoolean(
-              this.getEngineGroup(group),
-              "beatloop_4_enabled",
-            );
-            break;
-          }
-          case ButtonAction.LoopDown: {
-            const loop = engine.getValue(
-              this.getEngineGroup(group),
-              "beatloop_size",
-            );
-            if (loop > MIN_BEATLOOP) {
-              engine.setValue(
-                this.getEngineGroup(group),
-                "beatloop_size",
-                loop / 2,
-              );
-            }
-            break;
-          }
-          case ButtonAction.LoopUp: {
-            const loop = engine.getValue(
-              this.getEngineGroup(group),
-              "beatloop_size",
-            );
-            if (loop < MAX_BEATLOOP) {
-              engine.setValue(
-                this.getEngineGroup(group),
-                "beatloop_size",
-                loop * 2,
-              );
-            }
-            break;
-          }
-          case ButtonAction.Hotcue1:
-            engine.setValue(this.getEngineGroup(group), "hotcue_1_activate", 1);
-            break;
-          case ButtonAction.Hotcue2:
-            engine.setValue(this.getEngineGroup(group), "hotcue_2_activate", 1);
-            break;
-          case ButtonAction.Hotcue3:
-            engine.setValue(this.getEngineGroup(group), "hotcue_3_activate", 1);
-            break;
-          case ButtonAction.Hotcue4:
-            engine.setValue(this.getEngineGroup(group), "hotcue_4_activate", 1);
-            break;
-          case ButtonAction.Hotcue5:
-            engine.setValue(this.getEngineGroup(group), "hotcue_5_activate", 1);
-            break;
-          case ButtonAction.Hotcue6:
-            engine.setValue(this.getEngineGroup(group), "hotcue_6_activate", 1);
-            break;
-          case ButtonAction.Hotcue7:
-            engine.setValue(this.getEngineGroup(group), "hotcue_7_activate", 1);
-            break;
-          case ButtonAction.Hotcue8:
-            engine.setValue(this.getEngineGroup(group), "hotcue_8_activate", 1);
-            break;
-          case ButtonAction.ClearHotcue1:
-            engine.setValue(this.getEngineGroup(group), "hotcue_1_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue2:
-            engine.setValue(this.getEngineGroup(group), "hotcue_2_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue3:
-            engine.setValue(this.getEngineGroup(group), "hotcue_3_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue4:
-            engine.setValue(this.getEngineGroup(group), "hotcue_4_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue5:
-            engine.setValue(this.getEngineGroup(group), "hotcue_5_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue6:
-            engine.setValue(this.getEngineGroup(group), "hotcue_6_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue7:
-            engine.setValue(this.getEngineGroup(group), "hotcue_7_clear", 1);
-            break;
-          case ButtonAction.ClearHotcue8:
-            engine.setValue(this.getEngineGroup(group), "hotcue_8_clear", 1);
-            break;
-          case ButtonAction.BeatjumpLeft1:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_1_backward",
-              1,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft2:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_2_backward",
-              2,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft4:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_4_backward",
-              4,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft8:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_8_backward",
-              8,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft16:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_16_backward",
-              16,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft32:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_32_backward",
-              32,
-            );
-            break;
-          case ButtonAction.BeatjumpLeft64:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_64_backward",
-              64,
-            );
-            break;
-          case ButtonAction.BeatjumpRight1:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_1_forward",
-              1,
-            );
-            break;
-          case ButtonAction.BeatjumpRight2:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_2_forward",
-              2,
-            );
-            break;
-          case ButtonAction.BeatjumpRight4:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_4_forward",
-              4,
-            );
-            break;
-          case ButtonAction.BeatjumpRight8:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_8_forward",
-              8,
-            );
-            break;
-          case ButtonAction.BeatjumpRight16:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_16_forward",
-              16,
-            );
-            break;
-          case ButtonAction.BeatjumpRight32:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_32_forward",
-              32,
-            );
-            break;
-          case ButtonAction.BeatjumpRight64:
-            engine.setValue(
-              this.getEngineGroup(group),
-              "beatjump_64_forward",
-              64,
-            );
-            break;
-          case ButtonAction.BeatjumpLeftByLoop: {
-            const loop = engine.getValue(
-              this.getEngineGroup(group),
-              "beatloop_size",
-            );
-            engine.setValue(
-              this.getEngineGroup(group),
-              `beatjump_${loop}_backward`,
-              1,
-            );
-            break;
-          }
-          case ButtonAction.BeatjumpRightByLoop: {
-            const loop = engine.getValue(
-              this.getEngineGroup(group),
-              "beatloop_size",
-            );
-            engine.setValue(
-              this.getEngineGroup(group),
-              `beatjump_${loop}_forward`,
-              1,
-            );
-            break;
-          }
-          case ButtonAction.Cue:
-            engine.setValue(this.getEngineGroup(group), "cue_default", 1);
-            break;
-          case ButtonAction.Rev:
-            engine.setValue(this.getEngineGroup(group), "reverse", 1);
-            break;
-          case ButtonAction.Play:
-            this.toggleEngineBoolean(this.getEngineGroup(group), "play");
-            break;
-          case ButtonAction.Sync:
-            this.toggleEngineBoolean(
-              this.getEngineGroup(group),
-              "sync_enabled",
-            );
-            break;
-          case ButtonAction.SkipToStart:
-            engine.setValue(this.getEngineGroup(group), "start", 1);
-            break;
-          case ButtonAction.Disabled:
-            break;
-          default:
-            if (this.isDebugging) {
-              console.warn(
-                `No button down action for ${group} group: ${action}`,
-              );
-            }
-        }
+      case "toggleDecks":
+        const newValue =
+          !this.controllerState.decksToggle.left &&
+          !this.controllerState.decksToggle.right;
+        this.controllerState.decksToggle.left = newValue;
+        this.controllerState.decksToggle.right = newValue;
         break;
-      default:
-        throw new Error(`Invalid group name ${group}`);
+      case "hold":
+        engine.setValue(
+          applyTemplate(action.group, args),
+          applyTemplate(action.value, args),
+          1,
+        );
+        break;
+      case "toggle":
+        this.toggleEngineBoolean(
+          applyTemplate(action.group, args),
+          applyTemplate(action.value, args),
+        );
+        break;
     }
   }
 
   private stopAction({
-    group,
     action,
+    args,
   }: {
-    group: ControllerGroup;
     action: ButtonAction;
+    args: TemplateArgs;
   }) {
-    switch (group) {
-      case "main":
-        switch (action) {
-          case ButtonAction.Shift:
+    switch (action.kind) {
+      case "disabled":
+        break;
+      case "modifier":
+        switch (action.modifier) {
+          case "shift":
             this.controllerState.shift = false;
             break;
-          case ButtonAction.Super:
+          case "super":
             this.controllerState.super = false;
             break;
-          case ButtonAction.Disabled:
-            break;
-          default:
-            if (this.isDebugging) {
-              console.debug(
-                `No button up action for ${group} group: ${action}`,
-              );
-            }
         }
         break;
-      case "left":
-      case "right":
-        switch (action) {
-          case ButtonAction.Hotcue1:
-            engine.setValue(this.getEngineGroup(group), "hotcue_1_activate", 0);
-            break;
-          case ButtonAction.Hotcue2:
-            engine.setValue(this.getEngineGroup(group), "hotcue_2_activate", 0);
-            break;
-          case ButtonAction.Hotcue3:
-            engine.setValue(this.getEngineGroup(group), "hotcue_3_activate", 0);
-            break;
-          case ButtonAction.Hotcue4:
-            engine.setValue(this.getEngineGroup(group), "hotcue_4_activate", 0);
-            break;
-          case ButtonAction.Hotcue5:
-            engine.setValue(this.getEngineGroup(group), "hotcue_5_activate", 0);
-            break;
-          case ButtonAction.Hotcue6:
-            engine.setValue(this.getEngineGroup(group), "hotcue_6_activate", 0);
-            break;
-          case ButtonAction.Hotcue7:
-            engine.setValue(this.getEngineGroup(group), "hotcue_7_activate", 0);
-            break;
-          case ButtonAction.Hotcue8:
-            engine.setValue(this.getEngineGroup(group), "hotcue_8_activate", 0);
-            break;
-          case ButtonAction.Cue:
-            engine.setValue(this.getEngineGroup(group), "cue_default", 0);
-            break;
-          case ButtonAction.Rev:
-            engine.setValue(this.getEngineGroup(group), "reverse", 0);
-            break;
-          case ButtonAction.SkipToStart:
-            engine.setValue(this.getEngineGroup(group), "start", 0);
-            break;
-          case ButtonAction.Disabled:
-            break;
-          default:
-            if (this.isDebugging) {
-              console.debug(
-                `No button up action for ${group} group: ${action}`,
-              );
-            }
-        }
+      case "toggleDecks":
         break;
-      default:
-        throw new Error(`Invalid group name ${group}`);
+      case "hold":
+        engine.setValue(
+          applyTemplate(action.group, args),
+          applyTemplate(action.value, args),
+          0,
+        );
+        break;
+      case "toggle":
+        break;
     }
   }
 
@@ -996,14 +663,11 @@ class TraktorX1MK3Class {
   private getButtonAction(assignment: ButtonAssignment): ButtonAction {
     let action: ButtonAction;
     if (this.controllerState.super) {
-      action = assignment.superPush;
+      action = assignment.superPush ?? assignment.push;
     } else if (this.controllerState.shift) {
-      action = assignment.shiftPush;
+      action = assignment.shiftPush ?? assignment.push;
     } else {
-      action = assignment.push;
-    }
-    if (action === ButtonAction.Inherit) {
-      action = assignment.push;
+      action = assignment.push ?? assignment.push;
     }
     return action;
   }
@@ -1011,17 +675,19 @@ class TraktorX1MK3Class {
   private handleButton({
     group,
     name,
+    args,
     assignment,
   }: {
     group: ControllerGroup;
     name: ControllerButtonName;
+    args: TemplateArgs;
     assignment: ButtonAssignment;
   }) {
     if (this.controller.wasButtonPressed(group, name)) {
-      this.startAction({ group, action: this.getButtonAction(assignment) });
+      this.startAction({ args, action: this.getButtonAction(assignment) });
     }
     if (this.controller.wasButtonReleased(group, name)) {
-      this.stopAction({ group, action: this.getButtonAction(assignment) });
+      this.stopAction({ args, action: this.getButtonAction(assignment) });
     }
   }
 
@@ -1064,108 +730,142 @@ class TraktorX1MK3Class {
       });
     }
 
+    const mainArgs: TemplateArgs = {
+      side: 0,
+      group: 0,
+      left: this.controllerState.decksToggle.left ? 3 : 1,
+      right: this.controllerState.decksToggle.right ? 4 : 2,
+      beatloop: 0,
+    };
+
     // Handle main group buttons
     this.handleButton({
       group: "main",
       name: "top",
+      args: mainArgs,
       assignment: this.config.buttonAssignments.top,
     });
     this.handleButton({
       group: "main",
       name: "shift",
+      args: mainArgs,
       assignment: this.config.buttonAssignments.shift,
     });
 
     // Handle side group buttons
     for (const group of ["left" as const, "right" as const]) {
+      const args: TemplateArgs = Object.assign({}, mainArgs, {
+        side: group === "left" ? 1 : 2,
+        group: group === "left" ? mainArgs.left : mainArgs.right,
+        beatloop: engine.getValue(this.getEngineGroup(group), "beatloop_size"),
+      });
+
       this.handleButton({
         group,
         name: "assignLeft",
+        args,
         assignment: this.config.buttonAssignments.assignLeft,
       });
       this.handleButton({
         group,
         name: "assignRight",
+        args,
         assignment: this.config.buttonAssignments.assignRight,
       });
       this.handleButton({
         group,
         name: "fxToggle1",
+        args,
         assignment: this.config.buttonAssignments.fxToggle1,
       });
       this.handleButton({
         group,
         name: "fxToggle2",
+        args,
         assignment: this.config.buttonAssignments.fxToggle2,
       });
       this.handleButton({
         group,
         name: "fxToggle3",
+        args,
         assignment: this.config.buttonAssignments.fxToggle3,
       });
       this.handleButton({
         group,
         name: "fxToggle4",
+        args,
         assignment: this.config.buttonAssignments.fxToggle4,
       });
       this.handleButton({
         group,
         name: "browse",
+        args,
         assignment: this.config.buttonAssignments.browse,
       });
       this.handleButton({
         group,
         name: "loop",
+        args,
         assignment: this.config.buttonAssignments.loop,
       });
       this.handleButton({
         group,
         name: "hotcue1",
+        args,
         assignment: this.config.buttonAssignments.hotcue1,
       });
       this.handleButton({
         group,
         name: "hotcue2",
+        args,
         assignment: this.config.buttonAssignments.hotcue2,
       });
       this.handleButton({
         group,
         name: "hotcue3",
+        args,
         assignment: this.config.buttonAssignments.hotcue3,
       });
       this.handleButton({
         group,
         name: "hotcue4",
+        args,
         assignment: this.config.buttonAssignments.hotcue4,
       });
       this.handleButton({
         group,
         name: "nudgeLeft",
+        args,
         assignment: this.config.buttonAssignments.nudgeLeft,
       });
       this.handleButton({
         group,
         name: "nudgeRight",
+        args,
         assignment: this.config.buttonAssignments.nudgeRight,
       });
       this.handleButton({
         group,
         name: "cue",
+        args,
         assignment: this.config.buttonAssignments.cue,
       });
       this.handleButton({
         group,
         name: "rev",
+        args,
         assignment: this.config.buttonAssignments.rev,
       });
       this.handleButton({
         group,
         name: "play",
+        args,
         assignment: this.config.buttonAssignments.play,
       });
       this.handleButton({
         group,
         name: "sync",
+        args,
         assignment: this.config.buttonAssignments.sync,
       });
     }
@@ -1177,41 +877,53 @@ class TraktorX1MK3Class {
    * if appropriate.
    */
   private getActionLightColor({
-    group,
     action,
     defaultColor,
+    args,
   }: {
-    group: ControllerGroup;
     action: ButtonAction;
     defaultColor: string;
+    args: TemplateArgs;
   }): string {
-    switch (action) {
-      case ButtonAction.Shift:
-        return dimColorWhen(defaultColor, !this.controllerState.shift);
-      case ButtonAction.Play:
-        return dimColorWhen(
-          defaultColor,
-          engine.getValue(this.getEngineGroup(group), "play") === 0,
-        );
-      case ButtonAction.Sync:
-        return dimColorWhen(
-          defaultColor,
-          engine.getValue(this.getEngineGroup(group), "sync_enabled") === 0,
-        );
-      case ButtonAction.Cue:
-        return dimColorWhen(
-          defaultColor,
-          engine.getValue(this.getEngineGroup(group), "cue_default") === 0,
-        );
-      case ButtonAction.SkipToStart:
-        return dimColorWhen(
-          defaultColor,
-          engine.getValue(this.getEngineGroup(group), "start") === 0,
-        );
-      case ButtonAction.Disabled:
+    switch (action.kind) {
+      case "disabled":
         return "black";
-      default:
-        return defaultColor;
+      case "modifier":
+        switch (action.modifier) {
+          case "shift":
+            return dimColorWhen(defaultColor, !this.controllerState.shift);
+          case "super":
+            return dimColorWhen(defaultColor, !this.controllerState.super);
+        }
+      case "hold": {
+        const active =
+          engine.getValue(
+            applyTemplate(action.group, args),
+            applyTemplate(action.value, args),
+          ) > 0;
+        const color = action.color
+          ? COLOR_NAMES[
+              COLOR_MAPPER.getValueForNearestColor(
+                engine.getValue(
+                  applyTemplate(action.group, args),
+                  applyTemplate(action.color, args),
+                ),
+              )
+            ]
+          : defaultColor;
+
+        return dimColorWhen(color, !active);
+      }
+      case "toggle":
+        return dimColorWhen(
+          defaultColor,
+          !engine.getValue(
+            applyTemplate(action.group, args),
+            applyTemplate(action.value, args),
+          ),
+        );
+      case "toggleDecks":
+        return dimColor(defaultColor);
     }
   }
 
@@ -1219,104 +931,139 @@ class TraktorX1MK3Class {
     group,
     buttonName,
     lightName,
+    args,
   }: {
     group: ControllerGroup;
     buttonName: ControllerButtonName;
     lightName: ControllerColoredLightName;
+    args: TemplateArgs;
   }) {
     const assignment = this.config.buttonAssignments[buttonName];
     const action = this.getButtonAction(assignment);
     const defaultColor = defaultedColor(
-      defaultedColor(this.config.actionColors[action], this.config.colorTheme),
+      defaultedColor(
+        this.config.actionColors[action.name],
+        this.config.colorTheme,
+      ),
       DEFAULT_X1_MK3_CONFIG.colorTheme,
     );
-    const color = this.getActionLightColor({ group, action, defaultColor });
+    const color = this.getActionLightColor({
+      action,
+      defaultColor,
+      args,
+    });
     this.controller.lights.setColoredLight(group, lightName, color);
   }
 
   /** Syncs data from the engine to the lights. */
   private syncLights() {
-    const { shift } = this.controllerState;
+    const mainArgs: TemplateArgs = {
+      side: 0,
+      group: 0,
+      left: this.controllerState.decksToggle.left ? 3 : 1,
+      right: this.controllerState.decksToggle.right ? 4 : 2,
+      beatloop: 0,
+    };
 
     this.updateButtonLight({
       group: "main",
       buttonName: "shift",
       lightName: "shift",
+      args: mainArgs,
     });
 
     for (const group of ["left" as const, "right" as const]) {
       const engineGroup = this.getEngineGroup(group);
+      const args: TemplateArgs = Object.assign({}, mainArgs, {
+        side: group === "left" ? 1 : 2,
+        group: group === "left" ? mainArgs.left : mainArgs.right,
+        beatloop: engine.getValue(this.getEngineGroup(group), "beatloop_size"),
+      });
 
       // Update buttons
       this.updateButtonLight({
         group,
         buttonName: "fxToggle1",
         lightName: "fxToggle1",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "fxToggle2",
         lightName: "fxToggle2",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "fxToggle3",
         lightName: "fxToggle3",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "fxToggle4",
         lightName: "fxToggle4",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "hotcue1",
         lightName: "hotcue1",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "hotcue2",
         lightName: "hotcue2",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "hotcue3",
         lightName: "hotcue3",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "hotcue4",
         lightName: "hotcue4",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "nudgeLeft",
         lightName: "nudgeLeft",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "nudgeRight",
         lightName: "nudgeRight",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "cue",
         lightName: "cue",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "rev",
         lightName: "rev",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "play",
         lightName: "play",
+        args,
       });
       this.updateButtonLight({
         group,
         buttonName: "sync",
         lightName: "sync",
+        args,
       });
 
       // Update bottom LEDs

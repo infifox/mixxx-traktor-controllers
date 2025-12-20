@@ -190,4 +190,5 @@ Total Length: 50 bytes
 - Byte 36: Right Assign Left
 - Byte 37: Right Assign Right
 - Bytes 38-43: Bottom LEDs Left (6 lights from front to back)
+- Byte 44: Unused
 - Bytes 45-50: Bottom LEDS Right (6 lights from front to back)
