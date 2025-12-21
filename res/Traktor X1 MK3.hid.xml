@@ -78,6 +78,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="assignRightPush" label="Assign Right" type="enum">
                 <value label="Assign Deck B/D">assignDeckBD</value>
@@ -132,6 +133,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="FX Controls">
@@ -188,6 +190,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle2Push" label="FX Toggle 2" type="enum">
                 <value label="Toggle Fx 1">toggleFx1</value>
@@ -242,6 +245,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle3Push" label="FX Toggle 3" type="enum">
                 <value label="Toggle Fx 2">toggleFx2</value>
@@ -296,6 +300,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle4Push" label="FX Toggle 4" type="enum">
                 <value label="Toggle Fx 3">toggleFx3</value>
@@ -350,6 +355,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Encoders and Shift">
@@ -412,6 +418,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="loopPush" label="Loop Encoder Push" type="enum">
                 <value label="Toggle Loop">toggleLoop</value>
@@ -466,6 +473,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Hotcues and Play Buttons">
@@ -522,6 +530,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue2Push" label="Hotcue 2" type="enum">
                 <value label="Hotcue 2">hotcue2</value>
@@ -576,6 +585,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue3Push" label="Hotcue 3" type="enum">
                 <value label="Hotcue 3">hotcue3</value>
@@ -630,6 +640,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue4Push" label="Hotcue 4" type="enum">
                 <value label="Hotcue 4">hotcue4</value>
@@ -684,6 +695,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeLeftPush" label="Nudge Left" type="enum">
                 <value label="Beatjump Backward 1">beatjumpBackward1</value>
@@ -738,6 +750,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeRightPush" label="Nudge Right" type="enum">
                 <value label="Beatjump Forward 1">beatjumpForward1</value>
@@ -792,6 +805,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="cuePush" label="Cue" type="enum">
                 <value label="Cue">cue</value>
@@ -846,6 +860,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="revPush" label="Rev" type="enum">
                 <value label="Rev">rev</value>
@@ -900,6 +915,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="playPush" label="Play" type="enum">
                 <value label="Play">play</value>
@@ -954,6 +970,7 @@
                 <value label="Rev">rev</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="syncPush" label="Sync" type="enum">
                 <value label="Sync">sync</value>
@@ -1008,6 +1025,7 @@
                 <value label="Rev">rev</value>
                 <value label="Play">play</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
   </group>
@@ -1074,6 +1092,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="assignRightShiftPush" label="Assign Right" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1129,6 +1148,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="FX Controls">
@@ -1186,6 +1206,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle2ShiftPush" label="FX Toggle 2" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1241,6 +1262,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle3ShiftPush" label="FX Toggle 3" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1296,6 +1318,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle4ShiftPush" label="FX Toggle 4" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1351,6 +1374,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Encoders and Shift">
@@ -1362,7 +1386,7 @@
                 <value label="Toggle Decks AC/BD">toggleDecks</value>
             </option>
             <option variable="browseShiftPush" label="Browse Encoder Push" type="enum">
-                <value label="Inherit">inherit</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
                 <value label="Disabled">disabled</value>
                 <value label="Shift">shift</value>
                 <value label="Super">super</value>
@@ -1470,6 +1494,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Hotcues and Play Buttons">
@@ -1526,6 +1551,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue2ShiftPush" label="Hotcue 2" type="enum">
                 <value label="Clear Hotcue 2">clearHotcue2</value>
@@ -1580,6 +1606,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue3ShiftPush" label="Hotcue 3" type="enum">
                 <value label="Clear Hotcue 3">clearHotcue3</value>
@@ -1634,6 +1661,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue4ShiftPush" label="Hotcue 4" type="enum">
                 <value label="Clear Hotcue 4">clearHotcue4</value>
@@ -1688,6 +1716,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeLeftShiftPush" label="Nudge Left" type="enum">
                 <value label="Beatjump Backward by Loop Size">beatjumpBackwardLoop</value>
@@ -1742,6 +1771,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeRightShiftPush" label="Nudge Right" type="enum">
                 <value label="Beatjump Forward by Loop Size">beatjumpForwardLoop</value>
@@ -1796,6 +1826,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="cueShiftPush" label="Cue" type="enum">
                 <value label="Cue">cue</value>
@@ -1850,6 +1881,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="revShiftPush" label="Rev" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1905,6 +1937,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="playShiftPush" label="Play" type="enum">
                 <value label="Inherit">inherit</value>
@@ -1960,6 +1993,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="syncShiftPush" label="Sync" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2015,6 +2049,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
   </group>
@@ -2081,6 +2116,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="assignRightSuperPush" label="Assign Right" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2136,6 +2172,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="FX Controls">
@@ -2193,6 +2230,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle2SuperPush" label="FX Toggle 2" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2248,6 +2286,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle3SuperPush" label="FX Toggle 3" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2303,6 +2342,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle4SuperPush" label="FX Toggle 4" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2358,6 +2398,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Encoders and Shift">
@@ -2422,6 +2463,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="loopSuperPush" label="Loop Encoder Push" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2477,6 +2519,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Hotcues and Play Buttons">
@@ -2534,6 +2577,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue2SuperPush" label="Hotcue 2" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2589,6 +2633,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue3SuperPush" label="Hotcue 3" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2644,6 +2689,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue4SuperPush" label="Hotcue 4" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2699,6 +2745,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeLeftSuperPush" label="Nudge Left" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2754,6 +2801,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeRightSuperPush" label="Nudge Right" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2809,6 +2857,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="cueSuperPush" label="Cue" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2864,6 +2913,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="revSuperPush" label="Rev" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2919,6 +2969,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="playSuperPush" label="Play" type="enum">
                 <value label="Inherit">inherit</value>
@@ -2974,6 +3025,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="syncSuperPush" label="Sync" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3029,6 +3081,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
   </group>
@@ -3095,6 +3148,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="assignRightSuperShiftPush" label="Assign Right" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3150,6 +3204,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="FX Controls">
@@ -3207,6 +3262,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle2SuperShiftPush" label="FX Toggle 2" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3262,6 +3318,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle3SuperShiftPush" label="FX Toggle 3" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3317,6 +3374,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="fxToggle4SuperShiftPush" label="FX Toggle 4" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3372,6 +3430,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Encoders and Shift">
@@ -3436,6 +3495,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="loopSuperShiftPush" label="Loop Encoder Push" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3491,6 +3551,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
         </group>
         <group label="Hotcues and Play Buttons">
@@ -3548,6 +3609,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue2SuperShiftPush" label="Hotcue 2" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3603,6 +3665,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue3SuperShiftPush" label="Hotcue 3" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3658,6 +3721,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="hotcue4SuperShiftPush" label="Hotcue 4" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3713,6 +3777,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeLeftSuperShiftPush" label="Nudge Left" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3768,6 +3833,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="nudgeRightSuperShiftPush" label="Nudge Right" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3823,6 +3889,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="cueSuperShiftPush" label="Cue" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3878,6 +3945,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="revSuperShiftPush" label="Rev" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3933,6 +4001,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="playSuperShiftPush" label="Play" type="enum">
                 <value label="Inherit">inherit</value>
@@ -3988,6 +4057,7 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
             </option>
             <option variable="syncSuperShiftPush" label="Sync" type="enum">
                 <value label="Inherit">inherit</value>
@@ -4043,6 +4113,127 @@
                 <value label="Play">play</value>
                 <value label="Sync">sync</value>
                 <value label="Skip to Start">skipToStart</value>
+                <value label="Expand or Collapse Library Folder">toggleLibraryFolder</value>
+            </option>
+        </group>
+  </group>
+  <group label="Encoder Turn">
+        <group label="Encoders and Shift">
+            <option variable="browseTurn" label="Browse Encoder Turn" type="enum">
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="browseShiftTurn" label="Browse Encoder Turn + SHIFT" type="enum">
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="browseSuperTurn" label="Browse Encoder Turn + SUPER" type="enum">
+                <value label="Inherit">inherit</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="browseSuperShiftTurn" label="Browse Encoder Turn + SUPER + SHIFT" type="enum">
+                <value label="Inherit">inherit</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="loopTurn" label="Loop Encoder Turn" type="enum">
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="loopShiftTurn" label="Loop Encoder Turn + SHIFT" type="enum">
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="loopSuperTurn" label="Loop Encoder Turn + SUPER" type="enum">
+                <value label="Inherit">inherit</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
+            </option>
+            <option variable="loopSuperShiftTurn" label="Loop Encoder Turn + SUPER + SHIFT" type="enum">
+                <value label="Inherit">inherit</value>
+                <value label="Beatjump 1">beatjump</value>
+                <value label="Beatjump 2">beatjump2</value>
+                <value label="Beatjump 4">beatjump4</value>
+                <value label="Beatjump 8">beatjump8</value>
+                <value label="Beatjump 16">beatjump16</value>
+                <value label="Beatjump 32">beatjump32</value>
+                <value label="Beatjump 64">beatjump64</value>
+                <value label="Beatjump by Loop Size">beatjumpByBeatloop</value>
+                <value label="Change Loop Size">beatloopSize</value>
+                <value label="Browse Library">browseLibrary</value>
+                <value label="Browse Library Folders">browseLibraryFolders</value>
+                <value label="Disabled">disabled</value>
             </option>
         </group>
   </group>

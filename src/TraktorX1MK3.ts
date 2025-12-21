@@ -7,6 +7,11 @@ import {
   TemplateArgs,
 } from "./ButtonAction";
 import {
+  ENCODER_ACTIONS,
+  EncoderAction,
+  loadEncoderActionFromSetting,
+} from "./EncoderAction";
+import {
   COLOR_MAPPER,
   COLOR_NAMES,
   defaultedColor,
@@ -18,6 +23,7 @@ import {
   Controller,
   ControllerButtonName,
   ControllerColoredLightName,
+  ControllerEncoderName,
   ControllerGroup,
   ControllerKnobName,
 } from "./X1MK3Controller";
@@ -30,6 +36,13 @@ type ButtonAssignment = {
   shiftPush?: ButtonAction;
   superPush?: ButtonAction;
   superShiftPush?: ButtonAction;
+};
+
+type EncoderAssignment = {
+  turn: EncoderAction;
+  shiftTurn?: EncoderAction;
+  superTurn?: EncoderAction;
+  superShiftTurn?: EncoderAction;
 };
 
 type TraktorX1MK3Config = {
@@ -54,6 +67,11 @@ type TraktorX1MK3Config = {
     rev: ButtonAssignment;
     play: ButtonAssignment;
     sync: ButtonAssignment;
+  };
+
+  encoderAssignments: {
+    browse: EncoderAssignment;
+    loop: EncoderAssignment;
   };
 
   colorTheme: string;
@@ -98,7 +116,10 @@ const DEFAULT_X1_MK3_CONFIG: TraktorX1MK3Config = {
     fxToggle2: assignment({ push: BUTTON_ACTIONS.toggleFx1 }),
     fxToggle3: assignment({ push: BUTTON_ACTIONS.toggleFx2 }),
     fxToggle4: assignment({ push: BUTTON_ACTIONS.toggleFx3 }),
-    browse: assignment({ push: BUTTON_ACTIONS.loadTrack }),
+    browse: assignment({
+      push: BUTTON_ACTIONS.loadTrack,
+      shiftPush: BUTTON_ACTIONS.toggleLibraryFolder,
+    }),
     loop: assignment({ push: BUTTON_ACTIONS.toggleLoop }),
     shift: assignment({ push: BUTTON_ACTIONS.shift }),
     hotcue1: assignment({
@@ -135,6 +156,17 @@ const DEFAULT_X1_MK3_CONFIG: TraktorX1MK3Config = {
     sync: assignment({
       push: BUTTON_ACTIONS.sync,
     }),
+  },
+
+  encoderAssignments: {
+    browse: {
+      turn: ENCODER_ACTIONS.browseLibrary,
+      shiftTurn: ENCODER_ACTIONS.browseLibraryFolders,
+    },
+    loop: {
+      turn: ENCODER_ACTIONS.beatloopSize,
+      shiftTurn: ENCODER_ACTIONS.beatjumpByBeatloop,
+    },
   },
 
   colorTheme: "blue",
@@ -322,7 +354,7 @@ class TraktorX1MK3Class {
     }
 
     for (const key in this.config) {
-      if (key !== "buttonAssignments") {
+      if (key !== "buttonAssignments" && key !== "encoderAssignments") {
         (this.config as Record<string, unknown>)[key] =
           engine.getSetting(key) ??
           (this.config as Record<string, unknown>)[key];
@@ -353,6 +385,34 @@ class TraktorX1MK3Class {
         superShiftPush: loadButtonActionFromSetting(
           engine.getSetting(`${key}SuperShiftPush`),
           assignment.superShiftPush,
+        ),
+      };
+    }
+
+    for (const key in this.config.encoderAssignments) {
+      const assignment =
+        this.config.encoderAssignments[
+          key as keyof TraktorX1MK3Config["encoderAssignments"]
+        ];
+      this.config.encoderAssignments[
+        key as keyof TraktorX1MK3Config["encoderAssignments"]
+      ] = {
+        turn:
+          loadEncoderActionFromSetting(
+            engine.getSetting(`${key}Turn`),
+            assignment.turn,
+          ) ?? ENCODER_ACTIONS.disabled,
+        shiftTurn: loadEncoderActionFromSetting(
+          engine.getSetting(`${key}ShiftTurn`),
+          assignment.shiftTurn,
+        ),
+        superTurn: loadEncoderActionFromSetting(
+          engine.getSetting(`${key}SuperTurn`),
+          assignment.superTurn,
+        ),
+        superShiftTurn: loadEncoderActionFromSetting(
+          engine.getSetting(`${key}SuperShiftTurn`),
+          assignment.superShiftTurn,
         ),
       };
     }
@@ -659,15 +719,102 @@ class TraktorX1MK3Class {
     }
   }
 
+  private performEncoderAction({
+    action,
+    group,
+    value,
+  }: {
+    action: EncoderAction;
+    group: ControllerGroup;
+    value: number;
+  }) {
+    switch (action.kind) {
+      case "disabled":
+        break;
+      case "direct": {
+        const multipliedValue =
+          action.multiplier === undefined ? value : value * action.multiplier;
+        engine.setValue(
+          action.engineGroup ?? this.getEngineGroup(group),
+          action.engineName,
+          multipliedValue,
+        );
+        break;
+      }
+      case "byBeatloop": {
+        const engineGroup = this.getEngineGroup(group);
+        const beatloopSize = engine.getValue(engineGroup, "beatloop_size");
+        const multipliedValue = value * beatloopSize;
+        engine.setValue(
+          this.getEngineGroup(group),
+          action.engineName,
+          multipliedValue,
+        );
+        break;
+      }
+      case "beatloopSize": {
+        const engineGroup = this.getEngineGroup(group);
+        let beatloopSize = engine.getValue(engineGroup, "beatloop_size");
+        let current = value;
+        while (current >= 1 && beatloopSize < 512) {
+          current--;
+          beatloopSize *= 2;
+        }
+        while (current <= -1 && beatloopSize > 0.03125) {
+          current++;
+          beatloopSize /= 2;
+        }
+
+        engine.setValue(engineGroup, "beatloop_size", beatloopSize);
+        break;
+      }
+      case "browseLibrary":
+        engine.setValue(
+          "[Library]",
+          "focused_widget",
+          action.widget === "tree" ? 2 : 3,
+        );
+        engine.setValue("[Library]", "MoveVertical", value);
+        break;
+    }
+  }
+
   /** Gets the current action for a button assignment. */
   private getButtonAction(assignment: ButtonAssignment): ButtonAction {
     let action: ButtonAction;
+    if (this.controllerState.super && this.controllerState.shift) {
+      action =
+        assignment.superShiftPush ??
+        assignment.superPush ??
+        assignment.shiftPush ??
+        assignment.push;
+    }
     if (this.controllerState.super) {
       action = assignment.superPush ?? assignment.push;
     } else if (this.controllerState.shift) {
       action = assignment.shiftPush ?? assignment.push;
     } else {
       action = assignment.push ?? assignment.push;
+    }
+    return action;
+  }
+
+  /** Gets the current action for an encoder assignment. */
+  private getEncoderAction(assignment: EncoderAssignment): EncoderAction {
+    let action: EncoderAction;
+    if (this.controllerState.super && this.controllerState.shift) {
+      action =
+        assignment.superShiftTurn ??
+        assignment.superTurn ??
+        assignment.shiftTurn ??
+        assignment.turn;
+    }
+    if (this.controllerState.super) {
+      action = assignment.superTurn ?? assignment.turn;
+    } else if (this.controllerState.shift) {
+      action = assignment.shiftTurn ?? assignment.turn;
+    } else {
+      action = assignment.turn ?? assignment.turn;
     }
     return action;
   }
@@ -688,6 +835,25 @@ class TraktorX1MK3Class {
     }
     if (this.controller.wasButtonReleased(group, name)) {
       this.stopAction({ args, action: this.getButtonAction(assignment) });
+    }
+  }
+
+  private handleEncoder({
+    group,
+    name,
+    assignment,
+  }: {
+    group: ControllerGroup;
+    name: ControllerEncoderName;
+    assignment: EncoderAssignment;
+  }) {
+    const value = this.controller.getEncoderChange(group, name);
+    if (value !== 0) {
+      this.performEncoderAction({
+        action: this.getEncoderAction(assignment),
+        group,
+        value,
+      });
     }
   }
 
@@ -752,7 +918,7 @@ class TraktorX1MK3Class {
       assignment: this.config.buttonAssignments.shift,
     });
 
-    // Handle side group buttons
+    // Handle side group buttons and encoders
     for (const group of ["left" as const, "right" as const]) {
       const args: TemplateArgs = Object.assign({}, mainArgs, {
         side: group === "left" ? 1 : 2,
@@ -868,6 +1034,18 @@ class TraktorX1MK3Class {
         args,
         assignment: this.config.buttonAssignments.sync,
       });
+
+      this.handleEncoder({
+        group,
+        name: "browse",
+        assignment: this.config.encoderAssignments.browse,
+      });
+
+      this.handleEncoder({
+        group,
+        name: "loop",
+        assignment: this.config.encoderAssignments.loop,
+      });
     }
   }
 
@@ -922,7 +1100,7 @@ class TraktorX1MK3Class {
             applyTemplate(action.value, args),
           ),
         );
-      case "toggleDecks":
+      default:
         return dimColor(defaultColor);
     }
   }
@@ -1264,92 +1442,6 @@ class TraktorX1MK3Class {
       width: 20,
       height: 61,
       value: gain,
-    });
-  }
-
-  private drawStemScreen(screen: TraktorScreen, group: "left" | "right") {
-    const engineGroup = this.getEngineGroup(group);
-    const volume = engine.getValue(this.getEngineGroup(group), "volume");
-    const drums = engine.getValue(`[Channel${engineGroup[8]}_Stem1]`, "volume");
-    const bass = engine.getValue(`[Channel${engineGroup[8]}_Stem2]`, "volume");
-    const other = engine.getValue(`[Channel${engineGroup[8]}_Stem3]`, "volume");
-    const vocal = engine.getValue(`[Channel${engineGroup[8]}_Stem4]`, "volume");
-    screen.clear();
-    screen.writeText({
-      x: 0,
-      y: 0,
-      scale: 1,
-      width: 1,
-      height: 4,
-      text: "VOL",
-    });
-    screen.drawVertVolGauge({
-      x: 14,
-      y: 2,
-      width: 10,
-      height: 61,
-      value: volume,
-    });
-
-    screen.writeText({
-      text: "Drums",
-      scale: 1,
-      x: 28,
-      y: 0,
-      width: 5,
-      height: 1,
-    });
-    screen.drawHorzVolGauge({
-      x: 82,
-      y: 2,
-      width: 46,
-      height: 12,
-      value: drums,
-    });
-    screen.writeText({
-      text: "Bass",
-      scale: 1,
-      x: 28,
-      y: 16,
-      width: 5,
-      height: 1,
-    });
-    screen.drawHorzVolGauge({
-      x: 82,
-      y: 18,
-      width: 46,
-      height: 12,
-      value: bass,
-    });
-    screen.writeText({
-      text: "Other",
-      scale: 1,
-      x: 28,
-      y: 32,
-      width: 5,
-      height: 1,
-    });
-    screen.drawHorzVolGauge({
-      x: 82,
-      y: 34,
-      width: 46,
-      height: 12,
-      value: other,
-    });
-    screen.writeText({
-      text: "Vocal",
-      scale: 1,
-      x: 28,
-      y: 48,
-      width: 5,
-      height: 1,
-    });
-    screen.drawHorzVolGauge({
-      x: 82,
-      y: 50,
-      width: 46,
-      height: 12,
-      value: vocal,
     });
   }
 

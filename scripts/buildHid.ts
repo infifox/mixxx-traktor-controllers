@@ -1,4 +1,5 @@
 import type { ButtonActionName } from "../src/ButtonAction";
+import { ENCODER_ACTIONS, EncoderActionName } from "../src/EncoderAction";
 
 const template = `
 <?xml version="1.0" encoding="utf-8" ?>
@@ -29,16 +30,26 @@ type SettingsGroup = {
   settings: Setting[];
 };
 
-type Setting = {
-  kind: "ButtonSetting";
-  section: "main" | "side";
-  name: string;
-  label: string;
-  push: ButtonActionName;
-  shiftPush?: ButtonActionName;
-  superPush?: ButtonActionName;
-  superShiftPush?: ButtonActionName;
-};
+type Setting =
+  | {
+      kind: "ButtonSetting";
+      section: "main" | "side";
+      name: string;
+      label: string;
+      push: ButtonActionName;
+      shiftPush?: ButtonActionName;
+      superPush?: ButtonActionName;
+      superShiftPush?: ButtonActionName;
+    }
+  | {
+      kind: "EncoderSetting";
+      name: string;
+      label: string;
+      turn: EncoderActionName;
+      shiftTurn?: EncoderActionName;
+      superTurn?: EncoderActionName;
+      superShiftTurn?: EncoderActionName;
+    };
 
 const BUTTON_ACTIONS_BY_SECTION: {
   main: ButtonActionName[];
@@ -98,7 +109,23 @@ const BUTTON_ACTIONS_BY_SECTION: {
     "play",
     "sync",
     "skipToStart",
+    "toggleLibraryFolder",
   ],
+};
+
+const ENCODER_ACTION_LABELS: Record<EncoderActionName, string> = {
+  disabled: "Disabled",
+  beatloopSize: "Change Loop Size",
+  beatjump: "Beatjump 1",
+  beatjump2: "Beatjump 2",
+  beatjump4: "Beatjump 4",
+  beatjump8: "Beatjump 8",
+  beatjump16: "Beatjump 16",
+  beatjump32: "Beatjump 32",
+  beatjump64: "Beatjump 64",
+  beatjumpByBeatloop: "Beatjump by Loop Size",
+  browseLibrary: "Browse Library",
+  browseLibraryFolders: "Browse Library Folders",
 };
 
 const BUTTON_ACTION_LABELS: Record<ButtonActionName, string> = {
@@ -155,6 +182,7 @@ const BUTTON_ACTION_LABELS: Record<ButtonActionName, string> = {
   play: "Play",
   sync: "Sync",
   skipToStart: "Skip to Start",
+  toggleLibraryFolder: "Expand or Collapse Library Folder",
 };
 
 function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
@@ -163,6 +191,8 @@ function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
   for (const group of groups) {
     output.push(`        <group label="${group.title}">`);
     for (const setting of group.settings) {
+      if (setting.kind !== "ButtonSetting") continue;
+
       // Regular setting item
       output.push(
         `            <option variable="${setting.name}Push" label="${setting.label}" type="enum">`,
@@ -183,6 +213,8 @@ function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
   for (const group of groups) {
     output.push(`        <group label="${group.title}">`);
     for (const setting of group.settings) {
+      if (setting.kind !== "ButtonSetting") continue;
+
       const shiftAction = setting.shiftPush;
       output.push(
         `            <option variable="${setting.name}ShiftPush" label="${setting.label}" type="enum">`,
@@ -203,6 +235,8 @@ function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
   for (const group of groups) {
     output.push(`        <group label="${group.title}">`);
     for (const setting of group.settings) {
+      if (setting.kind !== "ButtonSetting") continue;
+
       const superAction = setting.superPush;
       output.push(
         `            <option variable="${setting.name}SuperPush" label="${setting.label}" type="enum">`,
@@ -223,6 +257,8 @@ function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
   for (const group of groups) {
     output.push(`        <group label="${group.title}">`);
     for (const setting of group.settings) {
+      if (setting.kind !== "ButtonSetting") continue;
+
       const superShiftAction = setting.superShiftPush;
       output.push(
         `            <option variable="${setting.name}SuperShiftPush" label="${setting.label}" type="enum">`,
@@ -239,6 +275,73 @@ function buildSettings({ groups }: { groups: SettingsGroup[] }): string {
   }
   output.push(`  </group>`);
 
+  output.push(`  <group label="Encoder Turn">`);
+  for (const group of groups) {
+    if (!group.settings.some((setting) => setting.kind === "EncoderSetting")) {
+      continue;
+    }
+
+    output.push(`        <group label="${group.title}">`);
+    for (const setting of group.settings) {
+      if (setting.kind !== "EncoderSetting") continue;
+
+      // Regular setting item
+      output.push(
+        `            <option variable="${setting.name}Turn" label="${setting.label}" type="enum">`,
+      );
+      output.push(makeEncoderActionValueItem(setting.turn));
+      for (const actionName of Object.keys(ENCODER_ACTIONS)) {
+        if (actionName !== setting.turn) {
+          output.push(
+            makeEncoderActionValueItem(actionName as EncoderActionName),
+          );
+        }
+      }
+      output.push(`            </option>`);
+
+      output.push(
+        `            <option variable="${setting.name}ShiftTurn" label="${setting.label} + SHIFT" type="enum">`,
+      );
+      output.push(makeEncoderActionValueItem(setting.shiftTurn));
+      for (const actionName of Object.keys(ENCODER_ACTIONS)) {
+        if (actionName !== setting.shiftTurn) {
+          output.push(
+            makeEncoderActionValueItem(actionName as EncoderActionName),
+          );
+        }
+      }
+      output.push(`            </option>`);
+
+      output.push(
+        `            <option variable="${setting.name}SuperTurn" label="${setting.label} + SUPER" type="enum">`,
+      );
+      output.push(makeEncoderActionValueItem(setting.superTurn));
+      for (const actionName of Object.keys(ENCODER_ACTIONS)) {
+        if (actionName !== setting.superTurn) {
+          output.push(
+            makeEncoderActionValueItem(actionName as EncoderActionName),
+          );
+        }
+      }
+      output.push(`            </option>`);
+
+      output.push(
+        `            <option variable="${setting.name}SuperShiftTurn" label="${setting.label} + SUPER + SHIFT" type="enum">`,
+      );
+      output.push(makeEncoderActionValueItem(setting.superShiftTurn));
+      for (const actionName of Object.keys(ENCODER_ACTIONS)) {
+        if (actionName !== setting.superShiftTurn) {
+          output.push(
+            makeEncoderActionValueItem(actionName as EncoderActionName),
+          );
+        }
+      }
+      output.push(`            </option>`);
+    }
+    output.push(`        </group>`);
+  }
+  output.push(`  </group>`);
+
   return output.join("\n");
 }
 
@@ -246,6 +349,13 @@ function makeButtonActionValueItem(
   action: ButtonActionName | undefined,
 ): string {
   const label = action ? BUTTON_ACTION_LABELS[action] : "Inherit";
+  return `                <value label="${label}">${action ?? "inherit"}</value>`;
+}
+
+function makeEncoderActionValueItem(
+  action: EncoderActionName | undefined,
+): string {
+  const label = action ? ENCODER_ACTION_LABELS[action] : "Inherit";
   return `                <value label="${label}">${action ?? "inherit"}</value>`;
 }
 
@@ -323,11 +433,26 @@ const output = template.slice().replace(
             push: "shift",
           },
           {
+            kind: "EncoderSetting",
+            name: "browse",
+            label: "Browse Encoder Turn",
+            turn: "browseLibrary",
+            shiftTurn: "browseLibraryFolders",
+          },
+          {
             kind: "ButtonSetting",
             section: "side",
             name: "browse",
             label: "Browse Encoder Push",
             push: "loadTrack",
+            shiftPush: "toggleLibraryFolder",
+          },
+          {
+            kind: "EncoderSetting",
+            name: "loop",
+            label: "Loop Encoder Turn",
+            turn: "beatloopSize",
+            shiftTurn: "beatjumpByBeatloop",
           },
           {
             kind: "ButtonSetting",

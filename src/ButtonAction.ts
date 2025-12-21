@@ -400,6 +400,12 @@ export const BUTTON_ACTIONS = {
     group: "[Channel%g]",
     value: "start",
   }),
+  toggleLibraryFolder: ButtonAction({
+    name: "toggleLibraryFolder",
+    kind: "hold",
+    group: "[Playlist]",
+    value: "ToggleSelectedSidebarItem",
+  }),
 };
 
 export type ButtonActionName = keyof typeof BUTTON_ACTIONS;
