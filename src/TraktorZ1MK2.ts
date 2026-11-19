@@ -763,6 +763,10 @@ class TraktorZ1MK2Class {
         engineName: "crossfader",
         scale: "crossfader",
         format: "signed",
+        // Do not let an out-of-sync physical fader jump the software mix.
+        // It must first pass through the current software position before it
+        // takes control.
+        softTakeover: true,
       });
     }
 
